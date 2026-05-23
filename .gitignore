@@ -7,3 +7,8 @@ skills-lock.json
 CLAUDE.md
 AGENTS.md
 .mcp.json
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
