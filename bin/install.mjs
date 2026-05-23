@@ -100,6 +100,20 @@ export function envWithInstallerBinOnPath(env = process.env) {
   };
 }
 
+export function installDolt() {
+  if (getInstalledVersion('dolt')) {
+    console.log('\ndolt: already installed');
+    return;
+  }
+  console.log('\nInstalling dolt (required by bd --server)...');
+  if (process.platform === 'win32') {
+    console.log('  dolt: no scripted Windows installer; install via `choco install dolt` or download the MSI from https://github.com/dolthub/dolt/releases');
+    return;
+  }
+  console.log('  Running official dolt install.sh (will prompt for sudo)');
+  execSync("sudo bash -c 'curl -L https://github.com/dolthub/dolt/releases/latest/download/install.sh | bash'", { stdio: 'inherit', shell: '/bin/bash' });
+}
+
 export function installBeads() {
   if (getInstalledVersion('bd')) {
     console.log('\nbd: already installed');
@@ -1175,6 +1189,9 @@ async function main() {
 
   // External skills (mattpocock/skills)
   installMattpocockSkills(tools);
+
+  // dolt (required by `bd init --server` / autostart)
+  installDolt();
 
   // beads (bd) issue tracker — binary only; project init lives behind -p
   installBeads();
