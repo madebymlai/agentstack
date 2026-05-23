@@ -3,6 +3,7 @@
 .codex
 .codex/
 .opencode/
+.perles/
 skills-lock.json
 CLAUDE.md
 AGENTS.md
