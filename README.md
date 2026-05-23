@@ -43,6 +43,10 @@ Bundled skill installed globally for all selected tools. Interactive project set
 - **Principles** - reviews AGENTS.md principles, probes codebase for project-specific additions
 - **tokf filters** - discovers noisy commands, writes project-local filters
 
+## Transcribers
+
+For hands-free agent prompting via voice dictation, see [**hyprwhspr**](https://github.com/goodroot/hyprwhspr) — Linux speech-to-text with a comparison of local + cloud transcriber backends (Cohere Transcribe, Parakeet, faster-whisper, whisper.cpp, Groq / OpenAI / Gemini REST + WebSocket).
+
 ## Candidates
 
 Tools being considered for future inclusion. These are not installed today.
