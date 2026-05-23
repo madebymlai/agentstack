@@ -36,12 +36,20 @@ Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
 | **AGENTS.md** | Principles template + tokf section |
 | **.gitignore** | Ignores .claude/, .codex/, .opencode/, .perles/, CLAUDE.md, AGENTS.md |
 
-## /agentstack skill
+## Built-in skills
 
-Bundled skill installed globally for all selected tools. Interactive project setup:
+Bundled skills installed globally for every selected tool.
 
-- **Principles** - reviews AGENTS.md principles, probes codebase for project-specific additions
-- **tokf filters** - discovers noisy commands, writes project-local filters
+### /agentstack
+
+Drives an interactive Q&A — propose, you accept or reject. If `tokf` is installed, you choose principles, filters, or both; otherwise it runs principles-only:
+
+- **Principles** — probes the codebase (languages, frameworks, anti-patterns) and proposes additions; writes accepted ones to AGENTS.md's `# Principles` section
+- **tokf filters** — runs `tokf discover` to find noisy commands, falls back to scanning build scripts (package.json, Makefile, justfile, pyproject.toml, etc.); writes per-command filters under `.tokf/filters/` or rewrites to `.tokf/rewrites.toml`
+
+### /beads
+
+Workflow guide for repositories using [beads](https://github.com/gastownhall/beads) as the shared task tracker. Tells agents to use `bd` (not markdown TODOs) for ready-work discovery, atomic claiming, dependency-aware follow-ups, and durable handoff across sessions or contributors.
 
 ## Transcribers
 
