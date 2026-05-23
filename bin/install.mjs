@@ -100,6 +100,42 @@ export function envWithInstallerBinOnPath(env = process.env) {
   };
 }
 
+export function installBeads() {
+  if (getInstalledVersion('bd')) {
+    console.log('\nbd: already installed');
+    return;
+  }
+  console.log('\nInstalling bd (beads)...');
+  if (process.platform === 'win32') {
+    console.log('  beads: install script is bash-only; skipping on Windows. See https://github.com/gastownhall/beads');
+    return;
+  }
+  execSync('curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash', { stdio: 'inherit', shell: '/bin/bash' });
+}
+
+const BEADS_RECIPE_NAMES = {
+  claude: 'claude',
+  codex: 'codex',
+  opencode: 'opencode',
+};
+
+export function setupBeadsForProject(tools) {
+  if (!getInstalledVersion('bd')) {
+    console.log('  bd: not installed, skipping `bd init` / `bd setup`');
+    return;
+  }
+  if (!existsSync('.beads')) {
+    console.log('  bd init');
+    execSync('bd init', { stdio: 'inherit' });
+  }
+  for (const t of tools) {
+    const recipe = BEADS_RECIPE_NAMES[t];
+    if (!recipe) continue;
+    console.log(`  bd setup ${recipe}`);
+    execSync(`bd setup ${recipe}`, { stdio: 'inherit' });
+  }
+}
+
 const TARGET_MAP = {
   linux:  { x64: { key: 'linux-x86_64' } },
   darwin: {
@@ -1094,6 +1130,10 @@ async function main() {
   if (projectOnly) {
     console.log('agentstack project setup\n');
     setupProject();
+    const tools = selectedByFlags.length
+      ? selectedByFlags
+      : TOOL_OPTIONS.map(tool => tool.value);
+    setupBeadsForProject(tools);
     console.log('\nDone.');
     return;
   }
@@ -1130,6 +1170,9 @@ async function main() {
 
   // External skills (mattpocock/skills)
   installMattpocockSkills(tools);
+
+  // beads (bd) issue tracker — binary only; project init lives behind -p
+  installBeads();
 
   ensureBypassPermissions(tools);
 
