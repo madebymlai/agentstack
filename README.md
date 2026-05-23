@@ -15,11 +15,10 @@ npx github:madebymlai/agentstack --claude --codex
 npx github:madebymlai/agentstack --opencode
 ```
 
-Project setup only (AGENTS.md, .gitignore):
+Project setup only (AGENTS.md, CLAUDE.md, .gitignore — tool flags ignored):
 
 ```bash
 npx github:madebymlai/agentstack --project
-npx github:madebymlai/agentstack --project --codex
 ```
 
 ## What it does

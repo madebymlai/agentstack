@@ -1063,7 +1063,7 @@ export function installMattpocockSkills(tools) {
   execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'inherit' });
 }
 
-export function setupProject(tools) {
+export function setupProject() {
   if (!existsSync('.git')) {
     console.log('Not a git repository, skipping project setup.');
     return;
@@ -1080,7 +1080,7 @@ export function setupProject(tools) {
     console.log('  Created AGENTS.md');
   }
 
-  if (tools.includes('claude') && !existsSync('CLAUDE.md')) {
+  if (!existsSync('CLAUDE.md')) {
     writeFileSync('CLAUDE.md', '@AGENTS.md\n');
     console.log('  Created CLAUDE.md (references @AGENTS.md)');
   }
@@ -1093,10 +1093,7 @@ async function main() {
 
   if (projectOnly) {
     console.log('agentstack project setup\n');
-    const tools = selectedByFlags.length
-      ? selectedByFlags
-      : TOOL_OPTIONS.map(tool => tool.value);
-    setupProject(tools);
+    setupProject();
     console.log('\nDone.');
     return;
   }
