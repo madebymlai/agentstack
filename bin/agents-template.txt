@@ -14,8 +14,4 @@
 - **No Silent Error Swallowing** — Never catch an exception and discard it without logging, re-raising, or making the failure visible; every error must produce an observable signal.
 - **Explicit Error Types** — Represent each distinct failure mode as a named, typed value in the return signature rather than relying on generic exceptions or sentinel values.
 
-## Documented Solutions
-
-`docs/solutions/` contains documented solutions to past problems and practices (bugs, best practices, workflow patterns), organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when implementing, debugging, or making decisions in documented areas.
-
 # Workflow
