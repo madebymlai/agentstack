@@ -140,8 +140,8 @@ export function setupBeadsForProject() {
     console.log('  bd: .beads/ already exists, skipping `bd init`');
     return;
   }
-  console.log('  bd init --server');
-  execSync('bd init --server', { stdio: 'inherit' });
+  console.log('  bd init --server --non-interactive');
+  execSync('bd init --server --non-interactive', { stdio: 'inherit' });
 }
 
 const TARGET_MAP = {
