@@ -100,16 +100,22 @@ export function envWithInstallerBinOnPath(env = process.env) {
   };
 }
 
+export function preflightDoltOnWindows() {
+  if (process.platform !== 'win32') return;
+  if (getInstalledVersion('dolt')) return;
+  console.log('agentstack requires dolt, but no scripted Windows installer is available.');
+  console.log('Install dolt first, then re-run agentstack:');
+  console.log('  choco install dolt');
+  console.log('  # or download the MSI: https://github.com/dolthub/dolt/releases');
+  process.exit(1);
+}
+
 export function installDolt() {
   if (getInstalledVersion('dolt')) {
     console.log('\ndolt: already installed');
     return;
   }
   console.log('\nInstalling dolt (required by bd --server)...');
-  if (process.platform === 'win32') {
-    console.log('  dolt: no scripted Windows installer; install via `choco install dolt` or download the MSI from https://github.com/dolthub/dolt/releases');
-    return;
-  }
   console.log('  Running official dolt install.sh (will prompt for sudo)');
   execSync("sudo bash -c 'curl -L https://github.com/dolthub/dolt/releases/latest/download/install.sh | bash'", { stdio: 'inherit', shell: '/bin/bash' });
 }
@@ -1148,6 +1154,8 @@ async function main() {
   const args = process.argv.slice(2);
   const projectOnly = args.includes('--project') || args.includes('-p');
   const selectedByFlags = toolsFromFlags(args);
+
+  preflightDoltOnWindows();
 
   if (projectOnly) {
     console.log('agentstack project setup\n');
