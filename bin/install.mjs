@@ -1135,7 +1135,6 @@ async function main() {
   installMattpocockSkills(tools);
 
   ensureBypassPermissions(tools);
-  setupProject(tools);
 
   console.log('\nDone.');
 }
