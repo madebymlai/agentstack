@@ -34,7 +34,7 @@ Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
 | [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). Bundled `beads` skill installed globally for selected tools. `-p` also runs `bd init --server --non-interactive` to create the project's `.beads/` DB. |
 | **beads viewer** | [`perles`](https://github.com/zjrosen/perles) (TUI) on Linux/macOS; [`beads_viewer`](https://github.com/Dicklesworthstone/beads_viewer) (TUI, `bv`) on Windows — perles has no Windows installer. |
 | **AGENTS.md** | Principles template + tokf section |
-| **.gitignore** | Ignores .claude/, .codex/, .opencode/, CLAUDE.md, AGENTS.md |
+| **.gitignore** | Ignores .claude/, .codex/, .opencode/, .perles/, CLAUDE.md, AGENTS.md |
 
 ## /agentstack skill
 
@@ -42,6 +42,10 @@ Bundled skill installed globally for all selected tools. Interactive project set
 
 - **Principles** - reviews AGENTS.md principles, probes codebase for project-specific additions
 - **tokf filters** - discovers noisy commands, writes project-local filters
+
+## Transcribers
+
+For hands-free agent prompting via voice dictation, see [**hyprwhspr**](https://github.com/goodroot/hyprwhspr) — Linux speech-to-text with a comparison of local + cloud transcriber backends (Cohere Transcribe, Parakeet, faster-whisper, whisper.cpp, Groq / OpenAI / Gemini REST + WebSocket).
 
 ## Candidates
 
