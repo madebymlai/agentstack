@@ -1127,7 +1127,7 @@ export function setupProject() {
     return;
   }
 
-  ensureGitignore(['.claude/', '.codex/', '.opencode/', 'CLAUDE.md', 'AGENTS.md', '.mcp.json']);
+  ensureGitignore(['.claude/', '.codex/', '.opencode/', '.perles/', 'CLAUDE.md', 'AGENTS.md', '.mcp.json']);
 
   if (!existsSync('AGENTS.md')) {
     let template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');

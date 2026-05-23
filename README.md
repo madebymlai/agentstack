@@ -34,7 +34,7 @@ Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
 | [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). Bundled `beads` skill installed globally for selected tools. `-p` also runs `bd init --server --non-interactive` to create the project's `.beads/` DB. |
 | **beads viewer** | [`perles`](https://github.com/zjrosen/perles) (TUI) on Linux/macOS; [`beads_viewer`](https://github.com/Dicklesworthstone/beads_viewer) (TUI, `bv`) on Windows — perles has no Windows installer. |
 | **AGENTS.md** | Principles template + tokf section |
-| **.gitignore** | Ignores .claude/, .codex/, .opencode/, CLAUDE.md, AGENTS.md |
+| **.gitignore** | Ignores .claude/, .codex/, .opencode/, .perles/, CLAUDE.md, AGENTS.md |
 
 ## /agentstack skill
 
