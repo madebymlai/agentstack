@@ -107,10 +107,10 @@ export function installBeads() {
   }
   console.log('\nInstalling bd (beads)...');
   if (process.platform === 'win32') {
-    console.log('  beads: install script is bash-only; skipping on Windows. See https://github.com/gastownhall/beads');
-    return;
+    execSync('powershell -NoProfile -Command "irm https://raw.githubusercontent.com/gastownhall/beads/main/install.ps1 | iex"', { stdio: 'inherit' });
+  } else {
+    execSync('curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash', { stdio: 'inherit', shell: '/bin/bash' });
   }
-  execSync('curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash', { stdio: 'inherit', shell: '/bin/bash' });
 }
 
 const BEADS_RECIPE_NAMES = {
