@@ -30,7 +30,7 @@ Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
 | [**tokf**](https://github.com/mpecan/tokf) | Token compression binary + global hooks for selected tools (Linux/MacOS only) |
 | [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge graph MCP server for all selected tools |
 | [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated agent skills, installed globally for selected tools via `npx skills@latest add` |
-| [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). `-p` also runs `bd init` and `bd setup <recipe>` per selected tool. |
+| [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). Bundled `beads` skill installed globally for selected tools. `-p` also runs `bd init` to create the project's `.beads/` DB. |
 | **AGENTS.md** | Principles template + tokf section |
 | **.gitignore** | Ignores .claude/, .codex/, .opencode/, CLAUDE.md, AGENTS.md |
 

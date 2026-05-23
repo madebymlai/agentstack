@@ -113,27 +113,17 @@ export function installBeads() {
   }
 }
 
-const BEADS_RECIPE_NAMES = {
-  claude: 'claude',
-  codex: 'codex',
-  opencode: 'opencode',
-};
-
-export function setupBeadsForProject(tools) {
+export function setupBeadsForProject() {
   if (!getInstalledVersion('bd')) {
-    console.log('  bd: not installed, skipping `bd init` / `bd setup`');
+    console.log('  bd: not installed, skipping `bd init`');
     return;
   }
-  if (!existsSync('.beads')) {
-    console.log('  bd init');
-    execSync('bd init', { stdio: 'inherit' });
+  if (existsSync('.beads')) {
+    console.log('  bd: .beads/ already exists, skipping `bd init`');
+    return;
   }
-  for (const t of tools) {
-    const recipe = BEADS_RECIPE_NAMES[t];
-    if (!recipe) continue;
-    console.log(`  bd setup ${recipe}`);
-    execSync(`bd setup ${recipe}`, { stdio: 'inherit' });
-  }
+  console.log('  bd init');
+  execSync('bd init', { stdio: 'inherit' });
 }
 
 const TARGET_MAP = {
@@ -1130,10 +1120,7 @@ async function main() {
   if (projectOnly) {
     console.log('agentstack project setup\n');
     setupProject();
-    const tools = selectedByFlags.length
-      ? selectedByFlags
-      : TOOL_OPTIONS.map(tool => tool.value);
-    setupBeadsForProject(tools);
+    setupBeadsForProject();
     console.log('\nDone.');
     return;
   }
