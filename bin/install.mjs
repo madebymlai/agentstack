@@ -100,14 +100,6 @@ export function envWithInstallerBinOnPath(env = process.env) {
   };
 }
 
-export function installBun() {
-  if (process.platform === 'win32') {
-    execSync('powershell -NoProfile -Command "irm bun.sh/install.ps1 | iex"', { stdio: 'inherit' });
-  } else {
-    execSync('curl -fsSL https://bun.sh/install | bash', { stdio: 'inherit', shell: '/bin/bash' });
-  }
-}
-
 const TARGET_MAP = {
   linux:  { x64: { key: 'linux-x86_64' } },
   darwin: {
@@ -1014,70 +1006,6 @@ export function toolsFromFlags(args = process.argv.slice(2)) {
     .map(tool => tool.value);
 }
 
-const CE_REPO = 'EveryInc/compound-engineering-plugin';
-
-const CLAUDE_PLUGINS = [
-  { marketplace: 'compound-engineering-plugin', repo: 'EveryInc/compound-engineering-plugin', plugin: 'compound-engineering' },
-];
-
-export function registerClaudePlugins() {
-  const settingsPath = resolve(homedir(), '.claude', 'settings.json');
-  let settings = {};
-  if (existsSync(settingsPath)) {
-    settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
-  }
-  settings.extraKnownMarketplaces ??= {};
-  settings.enabledPlugins ??= {};
-  const added = [];
-
-  for (const { marketplace, repo, plugin } of CLAUDE_PLUGINS) {
-    const pluginKey = `${plugin}@${marketplace}`;
-    let changed = false;
-    if (!settings.extraKnownMarketplaces[marketplace]) {
-      settings.extraKnownMarketplaces[marketplace] = { source: { source: 'github', repo } };
-      changed = true;
-    }
-    if (!settings.enabledPlugins[pluginKey]) {
-      settings.enabledPlugins[pluginKey] = true;
-      changed = true;
-    }
-    if (changed) {
-      added.push(pluginKey);
-    } else {
-      console.log(`  ${pluginKey}: already registered`);
-    }
-  }
-
-  if (added.length) {
-    mkdirSync(dirname(settingsPath), { recursive: true });
-    writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
-    for (const p of added) console.log(`  ${p}: registered`);
-    console.log('  Claude Code will auto-install on next session.');
-  }
-}
-
-export function installCompoundEngineering(tool) {
-  console.log(`\nInstalling compound-engineering for ${tool}...`);
-
-  switch (tool) {
-    case 'claude': {
-      registerClaudePlugins();
-      break;
-    }
-    case 'codex': {
-      execSync(`codex plugin marketplace add ${CE_REPO}`, { stdio: 'inherit' });
-      execSync('bunx @every-env/compound-plugin install compound-engineering --to codex', { stdio: 'inherit' });
-      console.log(`  codex: manual step needed — launch codex, run /plugins, find Compound Engineering, install from TUI`);
-      break;
-    }
-    case 'opencode': {
-      execSync('bunx @every-env/compound-plugin install compound-engineering --to opencode', { stdio: 'inherit' });
-      console.log(`  opencode: done`);
-      break;
-    }
-  }
-}
-
 export function ensureGitignore(entries) {
   const gitignorePath = resolve('.gitignore');
   let content = '';
@@ -1119,29 +1047,20 @@ export function installBundledSkills(tools) {
   }
 }
 
-export function installOpencodeToolMap(tools) {
-  if (!tools.includes('opencode')) return;
+const MATTPOCOCK_AGENT_NAMES = {
+  claude: 'claude-code',
+  codex: 'codex',
+  opencode: 'opencode',
+};
 
-  const configDir = getOpencodeConfigDir();
-  const agentsPath = resolve(configDir, 'AGENTS.md');
-  const toolMapPath = resolve(__dir, 'opencode-tool-map.txt');
-  const toolMap = readFileSync(toolMapPath, 'utf8').trim() + '\n';
-  const begin = '<!-- BEGIN COMPOUND OPENCODE TOOL MAP -->';
-  const end = '<!-- END COMPOUND OPENCODE TOOL MAP -->';
-  const blockPattern = new RegExp(`${begin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${end.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n?`);
+export function installMattpocockSkills(tools) {
+  const agents = tools.map(t => MATTPOCOCK_AGENT_NAMES[t]).filter(Boolean);
+  if (!agents.length) return;
 
-  mkdirSync(configDir, { recursive: true });
-  const existing = existsSync(agentsPath) ? readFileSync(agentsPath, 'utf8') : '';
-  const withoutBlock = existing.replace(blockPattern, '').trimEnd();
-  const next = `${withoutBlock}${withoutBlock ? '\n\n' : ''}${toolMap}`;
-
-  if (existing === next) {
-    console.log(`  opencode: tool map already set in ${agentsPath}`);
-    return;
-  }
-
-  writeFileSync(agentsPath, next);
-  console.log(`  opencode: updated ${agentsPath}`);
+  console.log('\nInstalling mattpocock/skills...');
+  const agentArgs = agents.flatMap(a => ['-a', a]);
+  const args = ['skills@latest', 'add', 'mattpocock/skills', '-g', '--skill', '*', '-y', ...agentArgs];
+  execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'inherit' });
 }
 
 export function setupProject(tools) {
@@ -1177,7 +1096,6 @@ async function main() {
     const tools = selectedByFlags.length
       ? selectedByFlags
       : TOOL_OPTIONS.map(tool => tool.value);
-    installOpencodeToolMap(tools);
     setupProject(tools);
     console.log('\nDone.');
     return;
@@ -1192,12 +1110,6 @@ async function main() {
   if (!tools.length) {
     console.log('Nothing selected.');
     return;
-  }
-
-  // Ensure bun is available when the selected tool flow needs it.
-  if ((tools.includes('codex') || tools.includes('opencode')) && !getInstalledVersion('bun')) {
-    console.log('\nInstalling bun...');
-    installBun();
   }
 
   // Binaries (version-checked)
@@ -1216,14 +1128,11 @@ async function main() {
     console.log(`\n${name}: done`);
   }
 
-  // Compound Engineering plugin
-  for (const tool of tools) {
-    installCompoundEngineering(tool);
-  }
-
   // Bundled agentstack skills
   installBundledSkills(tools);
-  installOpencodeToolMap(tools);
+
+  // External skills (mattpocock/skills)
+  installMattpocockSkills(tools);
 
   ensureBypassPermissions(tools);
   setupProject(tools);

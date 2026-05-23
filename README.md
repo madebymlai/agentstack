@@ -30,7 +30,7 @@ Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
 |------|-------------|
 | [**tokf**](https://github.com/mpecan/tokf) | Token compression binary + global hooks for selected tools (Linux/MacOS only) |
 | [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge graph MCP server for all selected tools |
-| [**compound-engineering**](https://github.com/EveryInc/compound-engineering-plugin) | AI dev workflow plugin (Claude) / native plugin + bunx-installed agents (Codex) / bunx install (OpenCode) |
+| [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated agent skills, installed globally for selected tools via `npx skills@latest add` |
 | **AGENTS.md** | Principles template + tokf section |
 | **.gitignore** | Ignores .claude/, .codex/, .opencode/, CLAUDE.md, AGENTS.md |
 
@@ -56,3 +56,4 @@ Tools being considered for future inclusion. These are not installed today.
 | Parallel workflows | [**parallel-code**](https://github.com/johannesjo/parallel-code) | Desktop GUI for dispatching Claude, Codex, Gemini, and Copilot agents in isolated git worktrees | Optional |
 | Usage reports | [**ccusage**](https://github.com/ryoppippi/ccusage) | Mature Claude Code usage analyzer with daily, monthly, session, and 5-hour billing-window reports | Optional |
 | Repo packing | [**Repomix**](https://github.com/yamadashy/repomix) | Packs local or remote repos into AI-friendly output with token counts, security checks, compression, and MCP mode | Docs only |
+| AI dev workflow | [**compound-engineering**](https://github.com/EveryInc/compound-engineering-plugin) | Plugin for Claude / Codex / OpenCode with brainstorm, plan, review, commit, PR, debug workflows; superseded here by mattpocock/skills | Replaced |
