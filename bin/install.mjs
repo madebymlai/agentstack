@@ -113,6 +113,24 @@ export function installBeads() {
   }
 }
 
+export function installBeadsViewer() {
+  if (process.platform === 'win32') {
+    if (getInstalledVersion('bv')) {
+      console.log('\nbeads_viewer: already installed');
+      return;
+    }
+    console.log('\nInstalling beads_viewer (bv)...');
+    execSync('powershell -NoProfile -Command "irm https://raw.githubusercontent.com/Dicklesworthstone/beads_viewer/main/install.ps1 | iex"', { stdio: 'inherit' });
+    return;
+  }
+  if (getInstalledVersion('perles')) {
+    console.log('\nperles: already installed');
+    return;
+  }
+  console.log('\nInstalling perles...');
+  execSync('curl -sSL https://raw.githubusercontent.com/zjrosen/perles/main/install.sh | bash', { stdio: 'inherit', shell: '/bin/bash' });
+}
+
 export function setupBeadsForProject() {
   if (!getInstalledVersion('bd')) {
     console.log('  bd: not installed, skipping `bd init`');
@@ -1160,6 +1178,9 @@ async function main() {
 
   // beads (bd) issue tracker — binary only; project init lives behind -p
   installBeads();
+
+  // beads viewer — perles on Linux/macOS, Dicklesworthstone/beads_viewer on Windows
+  installBeadsViewer();
 
   ensureBypassPermissions(tools);
 
