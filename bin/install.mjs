@@ -1137,7 +1137,13 @@ export function installMattpocockSkills(tools) {
   console.log('\nInstalling mattpocock/skills...');
   const agentArgs = agents.flatMap(a => ['-a', a]);
   const args = ['skills@latest', 'add', 'mattpocock/skills', '-g', '--skill', '*', '-y', ...agentArgs];
-  execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'inherit' });
+  try {
+    execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
+  } catch (err) {
+    if (err.stdout) process.stdout.write(err.stdout);
+    if (err.stderr) process.stderr.write(err.stderr);
+    throw err;
+  }
 }
 
 export function setupProject() {
