@@ -224,7 +224,7 @@ export function installPi() {
     return;
   }
   console.log('\nInstalling pi (pi-coding-agent)...');
-  execSync('npm install -g @earendil-works/pi-coding-agent', { stdio: 'inherit' });
+  execSync('npm install -g --loglevel=error @earendil-works/pi-coding-agent', { stdio: 'inherit' });
 }
 
 export function installSandcastle() {
@@ -1322,8 +1322,8 @@ async function main() {
   if (projectOnly) {
     console.log('agentstack project setup\n');
     if (!existsSync('.git')) {
-      console.log('Not a git repository, skipping project setup.');
-      return;
+      console.log('Not a git repository. Run from a git repo root.');
+      process.exit(1);
     }
     setupProject();
     setupBeadsForProject();
