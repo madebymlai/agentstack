@@ -171,7 +171,7 @@ export function installDolt() {
   }
   console.log('\nInstalling dolt (required by bd --server)...');
   console.log('  Running official dolt install.sh (will prompt for sudo)');
-  execSync("sudo bash -c 'curl -L https://github.com/dolthub/dolt/releases/latest/download/install.sh | bash'", { stdio: 'inherit', shell: '/bin/bash' });
+  execSync("sudo bash -c 'curl -fsSL https://github.com/dolthub/dolt/releases/latest/download/install.sh | bash'", { stdio: 'inherit', shell: '/bin/bash' });
 }
 
 export function installBeads() {
