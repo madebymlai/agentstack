@@ -1295,11 +1295,6 @@ export function installMattpocockSkills(tools) {
 }
 
 export function setupProject() {
-  if (!existsSync('.git')) {
-    console.log('Not a git repository, skipping project setup.');
-    return;
-  }
-
   ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.perles/', '.sandcastle/', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json']);
 
   if (!existsSync('AGENTS.md')) {
@@ -1326,6 +1321,10 @@ async function main() {
 
   if (projectOnly) {
     console.log('agentstack project setup\n');
+    if (!existsSync('.git')) {
+      console.log('Not a git repository, skipping project setup.');
+      return;
+    }
     setupProject();
     setupBeadsForProject();
     await setupSandcastleForProject();
