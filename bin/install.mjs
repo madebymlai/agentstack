@@ -160,8 +160,8 @@ export function setupBeadsForProject() {
     console.log('  bd: .beads/ already exists, skipping `bd init`');
     return;
   }
-  console.log('  bd init --server --non-interactive');
-  execSync('bd init --server --non-interactive', { stdio: 'inherit' });
+  console.log('  bd init --server --non-interactive --quiet --stealth');
+  execSync('bd init --server --non-interactive --quiet --stealth', { stdio: 'inherit' });
 }
 
 const TARGET_MAP = {
@@ -1070,18 +1070,31 @@ export function toolsFromFlags(args = process.argv.slice(2)) {
     .map(tool => tool.value);
 }
 
-export function ensureGitignore(entries) {
-  const gitignorePath = resolve('.gitignore');
-  let content = '';
-  if (existsSync(gitignorePath)) {
-    content = readFileSync(gitignorePath, 'utf8');
+// Writes ignore entries to `.git/info/exclude` instead of the tracked `.gitignore`,
+// using the same mechanism `bd init --stealth` uses (resolves the git common dir
+// via `git rev-parse --git-common-dir` so it works inside worktrees). Entries are
+// local-only and never committed.
+export function ensureGitExclude(entries) {
+  let gitDirPath;
+  try {
+    gitDirPath = execSync('git rev-parse --git-common-dir', {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    console.log('  Not a git repository, skipping git exclude setup');
+    return;
   }
-  const missing = entries.filter(e => !content.includes(e));
+  const infoDir = resolve(gitDirPath, 'info');
+  const excludePath = resolve(infoDir, 'exclude');
+  mkdirSync(infoDir, { recursive: true });
+  const existing = existsSync(excludePath) ? readFileSync(excludePath, 'utf8') : '';
+  const missing = entries.filter(e => !existing.includes(e));
   if (!missing.length) return;
+  const prefix = existing === '' || existing.endsWith('\n') ? '' : '\n';
   const block = missing.join('\n') + '\n';
-  const prefix = content === '' || content.endsWith('\n') ? '' : '\n';
-  writeFileSync(gitignorePath, content + prefix + block);
-  console.log(`  Added ${missing.join(', ')} to .gitignore`);
+  writeFileSync(excludePath, existing + prefix + block);
+  console.log(`  Added ${missing.join(', ')} to ${excludePath}`);
 }
 
 export function installBundledSkills(tools) {
@@ -1133,7 +1146,7 @@ export function setupProject() {
     return;
   }
 
-  ensureGitignore(['.claude/', '.codex/', '.opencode/', '.perles/', 'CLAUDE.md', 'AGENTS.md', '.mcp.json']);
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.perles/', 'CLAUDE.md', 'AGENTS.md', '.mcp.json']);
 
   if (!existsSync('AGENTS.md')) {
     let template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');

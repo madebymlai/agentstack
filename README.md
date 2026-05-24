@@ -15,7 +15,7 @@ npx github:madebymlai/agentstack --claude --codex
 npx github:madebymlai/agentstack --opencode
 ```
 
-Project setup only (AGENTS.md, CLAUDE.md, .gitignore — tool flags ignored):
+Project setup only (AGENTS.md, CLAUDE.md, `.git/info/exclude` — tool flags ignored):
 
 ```bash
 npx github:madebymlai/agentstack --project
@@ -31,10 +31,10 @@ Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
 | [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge graph MCP server for all selected tools |
 | [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated agent skills, installed globally for selected tools via `npx skills@latest add` |
 | [**dolt**](https://github.com/dolthub/dolt) | Version-controlled SQL DB required by `bd --server`. Linux/macOS: installed via official `curl \| sudo bash`. Windows: instructions printed (no scripted installer). |
-| [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). Bundled `beads` skill installed globally for selected tools. `-p` also runs `bd init --server --non-interactive` to create the project's `.beads/` DB. |
+| [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). Bundled `beads` skill installed globally for selected tools. `-p` also runs `bd init --server --non-interactive --quiet --stealth` to create the project's `.beads/` DB without writing `AGENTS.md`, `.claude/settings.json`, hooks, or a bootstrap commit (agentstack manages those itself); `.beads/` is added to `.git/info/exclude`. |
 | **beads viewer** | [`perles`](https://github.com/zjrosen/perles) (TUI) on Linux/macOS; [`beads_viewer`](https://github.com/Dicklesworthstone/beads_viewer) (TUI, `bv`) on Windows — perles has no Windows installer. |
 | **AGENTS.md** | Principles template + tokf section |
-| **.gitignore** | Ignores .claude/, .codex/, .opencode/, .perles/, CLAUDE.md, AGENTS.md |
+| **.git/info/exclude** | Local-only ignores (not committed) for .claude/, .codex/, .opencode/, .perles/, CLAUDE.md, AGENTS.md, .mcp.json |
 
 ## Built-in skills
 
