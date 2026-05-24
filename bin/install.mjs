@@ -115,6 +115,15 @@ export function httpsGetJson(url, retryOpts = {}) {
   return withRetry(() => httpsGetJsonOnce(url), { label: `GET ${host}`, ...retryOpts });
 }
 
+export async function getGithubLatestTag(repo) {
+  try {
+    const release = await httpsGetJson(`https://api.github.com/repos/${repo}/releases/latest`);
+    return release.tag_name?.replace(/^v/, '') || null;
+  } catch {
+    return null;
+  }
+}
+
 export function getPlatformPaths() {
   const isWin = process.platform === 'win32';
   if (isWin) {
@@ -174,12 +183,18 @@ export function installDolt() {
   execSync("sudo bash -c 'curl -fsSL https://github.com/dolthub/dolt/releases/latest/download/install.sh | bash'", { stdio: 'inherit', shell: '/bin/bash' });
 }
 
-export function installBeads() {
-  if (getInstalledVersion('bd')) {
-    console.log('\nbd: already installed');
+export async function installBeads() {
+  const installed = getInstalledVersion('bd');
+  const latest = await getGithubLatestTag('gastownhall/beads');
+  if (installed && (!latest || installed === latest)) {
+    console.log(`\n  bd ${installed} is up to date`);
     return;
   }
-  console.log('\nInstalling bd (beads)...');
+  if (installed) {
+    console.log(`\nbd ${installed} found; installing ${latest}...`);
+  } else {
+    console.log(`\nbd not found; installing ${latest || 'latest'}...`);
+  }
   if (process.platform === 'win32') {
     execSync('powershell -NoProfile -Command "irm https://raw.githubusercontent.com/gastownhall/beads/main/install.ps1 | iex"', { stdio: 'inherit' });
   } else {
@@ -187,21 +202,33 @@ export function installBeads() {
   }
 }
 
-export function installBeadsViewer() {
+export async function installBeadsViewer() {
   if (process.platform === 'win32') {
-    if (getInstalledVersion('bv')) {
-      console.log('\nbeads_viewer: already installed');
+    const installed = getInstalledVersion('bv');
+    const latest = await getGithubLatestTag('Dicklesworthstone/beads_viewer');
+    if (installed && (!latest || installed === latest)) {
+      console.log(`\n  beads_viewer ${installed} is up to date`);
       return;
     }
-    console.log('\nInstalling beads_viewer (bv)...');
+    if (installed) {
+      console.log(`\nbeads_viewer ${installed} found; installing ${latest}...`);
+    } else {
+      console.log(`\nbeads_viewer not found; installing ${latest || 'latest'}...`);
+    }
     execSync('powershell -NoProfile -Command "irm https://raw.githubusercontent.com/Dicklesworthstone/beads_viewer/main/install.ps1 | iex"', { stdio: 'inherit' });
     return;
   }
-  if (getInstalledVersion('perles')) {
-    console.log('\nperles: already installed');
+  const installed = getInstalledVersion('perles');
+  const latest = await getGithubLatestTag('zjrosen/perles');
+  if (installed && (!latest || installed === latest)) {
+    console.log(`\n  perles ${installed} is up to date`);
     return;
   }
-  console.log('\nInstalling perles...');
+  if (installed) {
+    console.log(`\nperles ${installed} found; installing ${latest}...`);
+  } else {
+    console.log(`\nperles not found; installing ${latest || 'latest'}...`);
+  }
   execSync('curl -sSL https://raw.githubusercontent.com/zjrosen/perles/main/install.sh | bash', { stdio: 'inherit', shell: '/bin/bash' });
 }
 
@@ -219,20 +246,44 @@ export function setupBeadsForProject() {
 }
 
 export function installPi() {
-  if (getInstalledVersion('pi')) {
-    console.log('\npi: already installed');
+  const installed = getInstalledVersion('pi');
+  const latest = getNpmLatestVersion('@earendil-works/pi-coding-agent');
+  if (installed && (!latest || installed === latest)) {
+    console.log(`\n  pi ${installed} is up to date`);
     return;
   }
-  console.log('\nInstalling pi (pi-coding-agent)...');
+  if (installed) {
+    console.log(`\npi ${installed} found; installing ${latest}...`);
+  } else {
+    console.log(`\npi not found; installing ${latest || 'latest'}...`);
+  }
   execSync('npm install -g --loglevel=error @earendil-works/pi-coding-agent', { stdio: 'inherit' });
 }
 
+function getNpmLatestVersion(pkg) {
+  try {
+    return execSync(`npm view ${pkg} version`, {
+      encoding: 'utf8',
+      timeout: 10000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
 export function installSandcastle() {
-  if (getInstalledVersion('sandcastle')) {
-    console.log('\nsandcastle: already installed');
+  const installed = getInstalledVersion('sandcastle');
+  const latest = getNpmLatestVersion('@ai-hero/sandcastle');
+  if (installed && (!latest || installed === latest)) {
+    console.log(`\n  sandcastle ${installed} is up to date`);
     return;
   }
-  console.log('\nInstalling sandcastle (@ai-hero/sandcastle) globally...');
+  if (installed) {
+    console.log(`\nsandcastle ${installed} found; installing ${latest}...`);
+  } else {
+    console.log(`\nsandcastle not found; installing ${latest || 'latest'}...`);
+  }
   execSync('npm install -g @ai-hero/sandcastle', { stdio: 'inherit' });
 }
 
@@ -488,11 +539,8 @@ export async function installBinary(name, server) {
   if (server.binName && server.latestVersionRepo) {
     const installed = getInstalledVersion(server.binName);
     if (installed) {
-      const releases = await httpsGetJson(
-        `https://api.github.com/repos/${server.latestVersionRepo}/releases/latest`
-      );
-      const latest = releases.tag_name.replace(/^v/, '');
-      if (installed === latest) {
+      const latest = await getGithubLatestTag(server.latestVersionRepo);
+      if (latest && installed === latest) {
         console.log(`\n  ${name} ${installed} is up to date`);
         return true;
       }
@@ -1369,10 +1417,10 @@ async function main() {
   installDolt();
 
   // beads (bd) issue tracker — binary only; project init lives behind -p
-  installBeads();
+  await installBeads();
 
   // beads viewer — perles on Linux/macOS, Dicklesworthstone/beads_viewer on Windows
-  installBeadsViewer();
+  await installBeadsViewer();
 
   // pi (pi-coding-agent) — cheap executor for sandcastle tasks
   installPi();
