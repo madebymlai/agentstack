@@ -218,6 +218,100 @@ export function setupBeadsForProject() {
   execSync('bd init --server --non-interactive --quiet --stealth', { stdio: 'inherit' });
 }
 
+export function installPi() {
+  if (getInstalledVersion('pi')) {
+    console.log('\npi: already installed');
+    return;
+  }
+  console.log('\nInstalling pi (pi-coding-agent)...');
+  execSync('npm install -g @earendil-works/pi-coding-agent', { stdio: 'inherit' });
+}
+
+export function installSandcastle() {
+  if (getInstalledVersion('sandcastle')) {
+    console.log('\nsandcastle: already installed');
+    return;
+  }
+  console.log('\nInstalling sandcastle (@ai-hero/sandcastle) globally...');
+  execSync('npm install -g @ai-hero/sandcastle', { stdio: 'inherit' });
+}
+
+function getPiAuthStatus() {
+  const authPath = resolve(homedir(), '.pi', 'agent', 'auth.json');
+  try {
+    const content = readFileSync(authPath, 'utf8');
+    const auth = JSON.parse(content);
+    return Object.keys(auth).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function getPiModels() {
+  try {
+    const output = execSync('pi --list-models', {
+      encoding: 'utf8',
+      timeout: 15000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const lines = output.trim().split('\n').slice(1);
+    return lines
+      .map(line => {
+        const cols = line.trim().split(/\s+/);
+        if (cols.length < 2) return null;
+        const [provider, model, context] = cols;
+        return {
+          label: `${provider}/${model}${context ? ` (${context})` : ''}`,
+          value: `${provider}/${model}`,
+        };
+      })
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+export async function setupSandcastleForProject() {
+  if (!getInstalledVersion('sandcastle')) {
+    console.log('  sandcastle: not installed, skipping init (run `npx agentstack` first to install globally)');
+    return;
+  }
+  if (!getInstalledVersion('pi')) {
+    console.log('  pi: not installed, skipping sandcastle init (run `npx agentstack` first to install globally)');
+    return;
+  }
+
+  if (!getPiAuthStatus()) {
+    console.log('\n  pi: no providers authenticated.');
+    console.log('  Run `pi` interactively, then type `/login` to authenticate with a model provider.');
+    console.log('  After authenticating, re-run `npx agentstack -p` to continue setup.');
+    return;
+  }
+
+  const models = getPiModels();
+  if (!models.length) {
+    console.log('  pi: no models found. Run `pi` then `/login` to authenticate, then re-run.');
+    return;
+  }
+
+  const selectedModel = await singleSelect('Which model should sandcastle use?', models);
+
+  const initCmd = `sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review`;
+  console.log(`  ${initCmd}`);
+  execSync(initCmd, { stdio: 'inherit' });
+
+  // Link the global install into node_modules/ so .sandcastle/main.ts's
+  // `import "@ai-hero/sandcastle"` resolves without touching package.json.
+  console.log('  npm link @ai-hero/sandcastle');
+  try {
+    execSync('npm link @ai-hero/sandcastle', { stdio: 'pipe' });
+  } catch (err) {
+    if (err.stdout) process.stdout.write(err.stdout);
+    if (err.stderr) process.stderr.write(err.stderr);
+    console.log('  Warning: `npm link @ai-hero/sandcastle` failed. Re-run manually if needed.');
+  }
+}
+
 const TARGET_MAP = {
   linux:  { x64: { key: 'linux-x86_64' } },
   darwin: {
@@ -1206,7 +1300,7 @@ export function setupProject() {
     return;
   }
 
-  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.perles/', '.sandcastle/', 'CLAUDE.md', 'AGENTS.md', '.mcp.json']);
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.perles/', '.sandcastle/', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json']);
 
   if (!existsSync('AGENTS.md')) {
     let template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');
@@ -1234,6 +1328,7 @@ async function main() {
     console.log('agentstack project setup\n');
     setupProject();
     setupBeadsForProject();
+    await setupSandcastleForProject();
     console.log('\nDone.');
     return;
   }
@@ -1279,6 +1374,12 @@ async function main() {
 
   // beads viewer — perles on Linux/macOS, Dicklesworthstone/beads_viewer on Windows
   installBeadsViewer();
+
+  // pi (pi-coding-agent) — cheap executor for sandcastle tasks
+  installPi();
+
+  // sandcastle (@ai-hero/sandcastle) — global CLI; per-project init lives behind -p
+  installSandcastle();
 
   ensureBypassPermissions(tools);
 
