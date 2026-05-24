@@ -39,26 +39,80 @@ export function getInstalledVersion(binName) {
   }
 }
 
-export function httpsGetJson(url, redirects = 0) {
+export class HttpError extends Error {
+  constructor(status, url, body, retryAfterSeconds) {
+    super(`HTTP ${status} from ${url}: ${body.slice(0, 200)}`);
+    this.name = 'HttpError';
+    this.status = status;
+    this.url = url;
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
+
+const TRANSIENT_HTTP_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
+const TRANSIENT_NET_CODES = new Set(['ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN', 'ENOTFOUND', 'ECONNREFUSED']);
+
+export function isTransientError(err) {
+  if (err instanceof HttpError) return TRANSIENT_HTTP_STATUSES.has(err.status);
+  return TRANSIENT_NET_CODES.has(err.code);
+}
+
+export async function withRetry(fn, opts = {}) {
+  const {
+    retries = 3,
+    baseDelayMs = 1000,
+    maxDelayMs = 30_000,
+    label,
+    shouldRetry = isTransientError,
+  } = opts;
+  let attempt = 0;
+  while (true) {
+    attempt++;
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt > retries || !shouldRetry(err)) throw err;
+      const hintMs = err.retryAfterSeconds != null ? err.retryAfterSeconds * 1000 : null;
+      const backoffMs = Math.min(baseDelayMs * 2 ** (attempt - 1), maxDelayMs);
+      const delayMs = hintMs ?? backoffMs;
+      const reason = err.status ? `HTTP ${err.status}` : (err.code || err.message.split('\n')[0].slice(0, 80));
+      const prefix = label ? `${label}: ` : '';
+      console.log(`  ${prefix}${reason} — retrying in ${Math.round(delayMs / 1000)}s (attempt ${attempt + 1}/${retries + 1})`);
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+}
+
+function httpsGetJsonOnce(url, redirects = 0) {
   if (redirects > 5) return Promise.reject(new Error(`Too many redirects fetching ${url}`));
   return new Promise((resolve, reject) => {
     const opts = { headers: { 'User-Agent': 'installer' } };
     https.get(url, opts, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return httpsGetJson(res.headers.location, redirects + 1).then(resolve, reject);
+        return httpsGetJsonOnce(res.headers.location, redirects + 1).then(resolve, reject);
       }
       let data = '';
       res.on('data', (chunk) => data += chunk);
       res.on('end', () => {
         if (res.statusCode >= 400) {
-          reject(new Error(`HTTP ${res.statusCode} from ${url}: ${data.slice(0, 200)}`));
+          const retryAfter = parseInt(res.headers['retry-after'], 10);
+          reject(new HttpError(res.statusCode, url, data, Number.isFinite(retryAfter) ? retryAfter : undefined));
           return;
         }
-        resolve(JSON.parse(data));
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(new Error(`Invalid JSON from ${url}: ${e.message}`));
+        }
       });
       res.on('error', reject);
     }).on('error', reject);
   });
+}
+
+export function httpsGetJson(url, retryOpts = {}) {
+  const host = (() => { try { return new URL(url).hostname; } catch { return url; } })();
+  return withRetry(() => httpsGetJsonOnce(url), { label: `GET ${host}`, ...retryOpts });
 }
 
 export function getPlatformPaths() {
