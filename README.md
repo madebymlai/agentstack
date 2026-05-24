@@ -34,7 +34,7 @@ Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
 | [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). Bundled `beads` skill installed globally for selected tools. `-p` also runs `bd init --server --non-interactive --quiet --stealth` to create the project's `.beads/` DB without writing `AGENTS.md`, `.claude/settings.json`, hooks, or a bootstrap commit (agentstack manages those itself); `.beads/` is added to `.git/info/exclude`. |
 | **beads viewer** | [`perles`](https://github.com/zjrosen/perles) (TUI) on Linux/macOS; [`beads_viewer`](https://github.com/Dicklesworthstone/beads_viewer) (TUI, `bv`) on Windows — perles has no Windows installer. |
 | **AGENTS.md** | Principles template + tokf section |
-| **.git/info/exclude** | Local-only ignores (not committed) for .claude/, .codex/, .opencode/, .perles/, CLAUDE.md, AGENTS.md, .mcp.json |
+| **.git/info/exclude** | Local-only ignores (not committed) for .claude/, .codex/, .opencode/, .perles/, .sandcastle/, CLAUDE.md, AGENTS.md, .mcp.json |
 
 ## Built-in skills
 
@@ -71,3 +71,4 @@ Tools being considered for future inclusion. These are not installed today.
 | Usage reports | [**ccusage**](https://github.com/ryoppippi/ccusage) | Mature Claude Code usage analyzer with daily, monthly, session, and 5-hour billing-window reports | Optional |
 | Repo packing | [**Repomix**](https://github.com/yamadashy/repomix) | Packs local or remote repos into AI-friendly output with token counts, security checks, compression, and MCP mode | Docs only |
 | AI dev workflow | [**compound-engineering**](https://github.com/EveryInc/compound-engineering-plugin) | Plugin for Claude / Codex / OpenCode with brainstorm, plan, review, commit, PR, debug workflows; superseded here by mattpocock/skills | Replaced |
+| Agent sandboxing | [**sandcastle**](https://github.com/mattpocock/sandcastle) | TypeScript library for orchestrating AI coding agents in isolated sandboxes (Docker, Podman, Vercel microVMs, or custom providers) with branch-based merge-back; built for parallel AFK agents and review pipelines | Optional |
