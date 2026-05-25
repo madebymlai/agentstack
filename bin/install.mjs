@@ -315,21 +315,6 @@ export function disablePiSkills() {
   console.log('  pi: disabled skill auto-discovery in ~/.pi/agent/settings.json');
 }
 
-export function installSandcastle() {
-  const installed = getInstalledVersion('sandcastle');
-  const latest = getNpmLatestVersion('@ai-hero/sandcastle');
-  if (installed && (!latest || installed === latest)) {
-    console.log(`\n  sandcastle ${installed} is up to date`);
-    return;
-  }
-  if (installed) {
-    console.log(`\nsandcastle ${installed} found; installing ${latest}...`);
-  } else {
-    console.log(`\nsandcastle not found; installing ${latest || 'latest'}...`);
-  }
-  execSync('npm install -g @ai-hero/sandcastle', { stdio: 'inherit' });
-}
-
 function getPiModels() {
   try {
     const output = execSync('pi --list-models 2>&1', {
@@ -356,14 +341,13 @@ function getPiModels() {
 }
 
 export async function setupSandcastleForProject() {
-  if (!getInstalledVersion('sandcastle')) {
-    console.log('  sandcastle: not installed, skipping init (run `npx agentstack` first to install globally)');
-    return;
-  }
   if (!getInstalledVersion('pi')) {
     console.log('  pi: not installed, skipping sandcastle init (run `npx agentstack` first to install globally)');
     return;
   }
+
+  console.log('  npm install --save-dev @ai-hero/sandcastle');
+  execSync('npm install --save-dev @ai-hero/sandcastle', { stdio: 'inherit' });
 
   if (existsSync('.sandcastle')) {
     console.log('  sandcastle: .sandcastle/ already exists, skipping init');
@@ -388,20 +372,9 @@ export async function setupSandcastleForProject() {
 
     const selectedModel = await singleSelect('Which model?', models);
 
-    const initCmd = `sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review`;
+    const initCmd = `npx sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review`;
     console.log(`  ${initCmd}`);
     execSync(initCmd, { stdio: 'inherit' });
-  }
-
-  // Link the global install into node_modules/ so .sandcastle/main.ts's
-  // `import "@ai-hero/sandcastle"` resolves without touching package.json.
-  console.log('  npm link @ai-hero/sandcastle');
-  try {
-    execSync('npm link --ignore-scripts @ai-hero/sandcastle', { stdio: 'pipe' });
-  } catch (err) {
-    if (err.stdout) process.stdout.write(err.stdout);
-    if (err.stderr) process.stderr.write(err.stderr);
-    console.log('  Warning: `npm link @ai-hero/sandcastle` failed. Re-run manually if needed.');
   }
 }
 
@@ -1409,7 +1382,7 @@ export function installMattpocockSkills(tools) {
 }
 
 export function setupProject() {
-  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.perles/', '.sandcastle/', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json']);
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.perles/', '.sandcastle/', 'node_modules/', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json']);
 
   if (!existsSync('AGENTS.md')) {
     let template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');
@@ -1491,9 +1464,6 @@ async function main() {
   // pi (pi-coding-agent) — cheap executor for sandcastle tasks
   installPi();
   disablePiSkills();
-
-  // sandcastle (@ai-hero/sandcastle) — global CLI; per-project init lives behind -p
-  installSandcastle();
 
   ensureBypassPermissions(tools);
 
