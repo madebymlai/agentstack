@@ -333,17 +333,21 @@ export async function setupSandcastleForProject() {
     return;
   }
 
-  const models = getPiModels();
-  if (!models.length) {
-    console.log('  pi: no models found. Run `pi` then `/login` to authenticate, then re-run.');
-    return;
+  if (existsSync('.sandcastle')) {
+    console.log('  sandcastle: .sandcastle/ already exists, skipping init');
+  } else {
+    const models = getPiModels();
+    if (!models.length) {
+      console.log('  pi: no models found. Run `pi` then `/login` to authenticate, then re-run.');
+      return;
+    }
+
+    const selectedModel = await singleSelect('Which model should sandcastle use?', models);
+
+    const initCmd = `sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review`;
+    console.log(`  ${initCmd}`);
+    execSync(initCmd, { stdio: 'inherit' });
   }
-
-  const selectedModel = await singleSelect('Which model should sandcastle use?', models);
-
-  const initCmd = `sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review`;
-  console.log(`  ${initCmd}`);
-  execSync(initCmd, { stdio: 'inherit' });
 
   // Link the global install into node_modules/ so .sandcastle/main.ts's
   // `import "@ai-hero/sandcastle"` resolves without touching package.json.
