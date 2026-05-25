@@ -177,37 +177,7 @@ export function envWithInstallerBinOnPath(env = process.env) {
   };
 }
 
-export function preflightDoltOnWindows() {
-  if (process.platform !== 'win32') return;
-  if (getInstalledVersion('dolt')) return;
-  console.log('agentstack requires dolt, but no scripted Windows installer is available.');
-  console.log('Install dolt first, then re-run agentstack:');
-  console.log('  choco install dolt');
-  console.log('  # or download the MSI: https://github.com/dolthub/dolt/releases');
-  process.exit(1);
-}
 
-export async function installDolt() {
-  const installed = getInstalledVersion('dolt');
-  const latest = await getGithubLatestTag('dolthub/dolt');
-  if (installed && (!latest || installed === latest)) {
-    console.log(`\n  dolt ${installed} is up to date`);
-    return;
-  }
-  if (installed) {
-    console.log(`\ndolt ${installed} found; installing ${latest}...`);
-  } else {
-    console.log(`\ndolt not found; installing ${latest || 'latest'}...`);
-  }
-  if (process.platform === 'win32') {
-    console.log('  Install dolt first, then re-run agentstack:');
-    console.log('  choco install dolt');
-    console.log('  # or download the MSI: https://github.com/dolthub/dolt/releases');
-    return;
-  }
-  console.log('  Running official dolt install.sh (will prompt for sudo)');
-  execSync("sudo bash -c 'curl -fsSL https://github.com/dolthub/dolt/releases/latest/download/install.sh | bash'", { stdio: 'inherit', shell: '/bin/bash' });
-}
 
 export async function installBeads() {
   const installed = getInstalledVersion('bd');
@@ -228,35 +198,7 @@ export async function installBeads() {
   }
 }
 
-export async function installBeadsViewer() {
-  if (process.platform === 'win32') {
-    const installed = getInstalledVersion('bv');
-    const latest = await getGithubLatestTag('Dicklesworthstone/beads_viewer');
-    if (installed && (!latest || installed === latest)) {
-      console.log(`\n  beads_viewer ${installed} is up to date`);
-      return;
-    }
-    if (installed) {
-      console.log(`\nbeads_viewer ${installed} found; installing ${latest}...`);
-    } else {
-      console.log(`\nbeads_viewer not found; installing ${latest || 'latest'}...`);
-    }
-    execSync('powershell -NoProfile -Command "irm https://raw.githubusercontent.com/Dicklesworthstone/beads_viewer/main/install.ps1 | iex"', { stdio: 'inherit' });
-    return;
-  }
-  const installed = getInstalledVersion('perles');
-  const latest = await getGithubLatestTag('zjrosen/perles');
-  if (installed && (!latest || installed === latest)) {
-    console.log(`\n  perles ${installed} is up to date`);
-    return;
-  }
-  if (installed) {
-    console.log(`\nperles ${installed} found; installing ${latest}...`);
-  } else {
-    console.log(`\nperles not found; installing ${latest || 'latest'}...`);
-  }
-  execSync('curl -sSL https://raw.githubusercontent.com/zjrosen/perles/main/install.sh | bash', { stdio: 'inherit', shell: '/bin/bash' });
-}
+
 
 export function setupBeadsForProject() {
   if (!getInstalledVersion('bd')) {
@@ -267,8 +209,8 @@ export function setupBeadsForProject() {
     console.log('  bd: .beads/ already exists, skipping `bd init`');
     return;
   }
-  console.log('  bd init --server --non-interactive --quiet --stealth');
-  execSync('bd init --server --non-interactive --quiet --stealth', { stdio: 'inherit' });
+  console.log('  bd init --non-interactive --quiet --stealth');
+  execSync('bd init --non-interactive --quiet --stealth', { stdio: 'inherit' });
 }
 
 export function installPi() {
@@ -1384,7 +1326,7 @@ export function installMattpocockSkills(tools) {
 }
 
 export function setupProject() {
-  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.perles/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json']);
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json']);
 
   if (!existsSync('AGENTS.md')) {
     let template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');
@@ -1405,8 +1347,6 @@ async function main() {
   const args = process.argv.slice(2);
   const projectOnly = args.includes('--project') || args.includes('-p');
   const selectedByFlags = toolsFromFlags(args);
-
-  preflightDoltOnWindows();
 
   if (projectOnly) {
     console.log('agentstack project setup\n');
@@ -1454,14 +1394,10 @@ async function main() {
   // External skills (mattpocock/skills)
   installMattpocockSkills(tools);
 
-  // dolt (required by `bd init --server` / autostart)
-  await installDolt();
-
   // beads (bd) issue tracker — binary only; project init lives behind -p
   await installBeads();
 
-  // beads viewer — perles on Linux/macOS, Dicklesworthstone/beads_viewer on Windows
-  await installBeadsViewer();
+
 
   // pi (pi-coding-agent) — cheap executor for sandcastle tasks
   installPi();
