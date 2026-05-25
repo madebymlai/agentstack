@@ -309,19 +309,20 @@ function getPiModels() {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     const lines = output.trim().split('\n').slice(1);
-    return lines
-      .map(line => {
-        const cols = line.trim().split(/\s+/);
-        if (cols.length < 2) return null;
-        const [provider, model, context] = cols;
-        return {
-          label: `${provider}/${model}${context ? ` (${context})` : ''}`,
-          value: `${provider}/${model}`,
-        };
-      })
-      .filter(Boolean);
+    const byProvider = new Map();
+    for (const line of lines) {
+      const cols = line.trim().split(/\s+/);
+      if (cols.length < 2) continue;
+      const [provider, model, context] = cols;
+      if (!byProvider.has(provider)) byProvider.set(provider, []);
+      byProvider.get(provider).push({
+        label: `${model}${context ? ` (${context})` : ''}`,
+        value: `${provider}/${model}`,
+      });
+    }
+    return byProvider;
   } catch {
-    return [];
+    return new Map();
   }
 }
 
@@ -338,13 +339,25 @@ export async function setupSandcastleForProject() {
   if (existsSync('.sandcastle')) {
     console.log('  sandcastle: .sandcastle/ already exists, skipping init');
   } else {
-    const models = getPiModels();
-    if (!models.length) {
+    const modelsByProvider = getPiModels();
+    if (!modelsByProvider.size) {
       console.log('  pi: no models found. Run `pi` then `/login` to authenticate, then re-run.');
       return;
     }
 
-    const selectedModel = await singleSelect('Which model should sandcastle use?', models);
+    const providers = [...modelsByProvider.keys()];
+    let models;
+    if (providers.length === 1) {
+      models = modelsByProvider.get(providers[0]);
+    } else {
+      const provider = await singleSelect(
+        'Which provider?',
+        providers.map(p => ({ label: p, value: p })),
+      );
+      models = modelsByProvider.get(provider);
+    }
+
+    const selectedModel = await singleSelect('Which model?', models);
 
     const initCmd = `sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review`;
     console.log(`  ${initCmd}`);
