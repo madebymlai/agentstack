@@ -349,7 +349,7 @@ export async function setupSandcastleForProject() {
   // `import "@ai-hero/sandcastle"` resolves without touching package.json.
   console.log('  npm link @ai-hero/sandcastle');
   try {
-    execSync('npm link @ai-hero/sandcastle', { stdio: 'pipe' });
+    execSync('npm link --ignore-scripts @ai-hero/sandcastle', { stdio: 'pipe' });
   } catch (err) {
     if (err.stdout) process.stdout.write(err.stdout);
     if (err.stderr) process.stderr.write(err.stderr);
