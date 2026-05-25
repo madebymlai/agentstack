@@ -173,12 +173,24 @@ export function preflightDoltOnWindows() {
   process.exit(1);
 }
 
-export function installDolt() {
-  if (getInstalledVersion('dolt')) {
-    console.log('\ndolt: already installed');
+export async function installDolt() {
+  const installed = getInstalledVersion('dolt');
+  const latest = await getGithubLatestTag('dolthub/dolt');
+  if (installed && (!latest || installed === latest)) {
+    console.log(`\n  dolt ${installed} is up to date`);
     return;
   }
-  console.log('\nInstalling dolt (required by bd --server)...');
+  if (installed) {
+    console.log(`\ndolt ${installed} found; installing ${latest}...`);
+  } else {
+    console.log(`\ndolt not found; installing ${latest || 'latest'}...`);
+  }
+  if (process.platform === 'win32') {
+    console.log('  Install dolt first, then re-run agentstack:');
+    console.log('  choco install dolt');
+    console.log('  # or download the MSI: https://github.com/dolthub/dolt/releases');
+    return;
+  }
   console.log('  Running official dolt install.sh (will prompt for sudo)');
   execSync("sudo bash -c 'curl -fsSL https://github.com/dolthub/dolt/releases/latest/download/install.sh | bash'", { stdio: 'inherit', shell: '/bin/bash' });
 }
@@ -287,17 +299,6 @@ export function installSandcastle() {
   execSync('npm install -g @ai-hero/sandcastle', { stdio: 'inherit' });
 }
 
-function getPiAuthStatus() {
-  const authPath = resolve(homedir(), '.pi', 'agent', 'auth.json');
-  try {
-    const content = readFileSync(authPath, 'utf8');
-    const auth = JSON.parse(content);
-    return Object.keys(auth).length > 0;
-  } catch {
-    return false;
-  }
-}
-
 function getPiModels() {
   try {
     const output = execSync('pi --list-models', {
@@ -329,13 +330,6 @@ export async function setupSandcastleForProject() {
   }
   if (!getInstalledVersion('pi')) {
     console.log('  pi: not installed, skipping sandcastle init (run `npx agentstack` first to install globally)');
-    return;
-  }
-
-  if (!getPiAuthStatus()) {
-    console.log('\n  pi: no providers authenticated.');
-    console.log('  Run `pi` interactively, then type `/login` to authenticate with a model provider.');
-    console.log('  After authenticating, re-run `npx agentstack -p` to continue setup.');
     return;
   }
 
@@ -1414,7 +1408,7 @@ async function main() {
   installMattpocockSkills(tools);
 
   // dolt (required by `bd init --server` / autostart)
-  installDolt();
+  await installDolt();
 
   // beads (bd) issue tracker — binary only; project init lives behind -p
   await installBeads();
@@ -1429,6 +1423,10 @@ async function main() {
   installSandcastle();
 
   ensureBypassPermissions(tools);
+
+  if (tools.includes('claude')) {
+    writeEnvVars([{ key: 'CLAUDE_CODE_MAX_CONTEXT_TOKENS', value: '200000' }]);
+  }
 
   console.log('\nDone.');
 }

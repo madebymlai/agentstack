@@ -28,13 +28,20 @@
 
 ## Triage labels
 
+Two **category** roles:
+
+ - `bug` — something is broken
+ - `enhancement` — new feature or improvement
+
+Five **state** roles:
+
  - `needs-triage` — maintainer needs to evaluate
  - `needs-info` — waiting on reporter
  - `ready-for-agent` — fully specified, AFK-ready (an agent can pick it up with no human context)
  - `ready-for-human` — needs human implementation
  - `wontfix` — will not be actioned
 
-### Domain docs
+## Domain docs
 
 Domain language and terminology defined in `CONTEXT.md` at the repo root.
 

@@ -1,0 +1,4 @@
+{
+  "command": "jq -r '((.context_window.total_input_tokens // 0) + (.context_window.total_output_tokens // 0)) / 1000 | floor | . as $used | if $used > 120 then \"\\u001b[1;30;48;5;196m ⚠ \" + ($used|tostring) + \"k \\u001b[0m\" else \"\\u001b[1;30;43m \" + ($used|tostring) + \"k \\u001b[0m\" end'",
+  "type": "command"
+}
