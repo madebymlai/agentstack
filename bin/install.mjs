@@ -26,11 +26,11 @@ export function copyDirMerge(src, dest, { overwrite = false } = {}) {
 
 export function getInstalledVersion(binName) {
   try {
-    const output = execSync(`${binName} --version`, {
+    const output = execSync(`${binName} --version 2>&1`, {
       env: envWithInstallerBinOnPath(),
       encoding: 'utf8',
       timeout: 5000,
-      stdio: ['ignore', 'pipe', 'ignore'],
+      stdio: ['ignore', 'pipe', 'pipe'],
     }).trim();
     const match = output.match(/(\d+\.\d+\.\d+)/);
     return match ? match[1] : null;
@@ -1425,7 +1425,7 @@ async function main() {
   ensureBypassPermissions(tools);
 
   if (tools.includes('claude')) {
-    writeEnvVars([{ key: 'CLAUDE_CODE_MAX_CONTEXT_TOKENS', value: '200000' }]);
+    writeEnvVars([{ key: 'CLAUDE_CODE_MAX_CONTEXT_TOKENS', value: '240000' }]);
   }
 
   console.log('\nDone.');
