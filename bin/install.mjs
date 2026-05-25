@@ -298,6 +298,23 @@ function getNpmLatestVersion(pkg) {
   }
 }
 
+export function disablePiSkills() {
+  const piDir = resolve(homedir(), '.pi', 'agent');
+  const settingsPath = resolve(piDir, 'settings.json');
+  let settings = {};
+  if (existsSync(settingsPath)) {
+    settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+  }
+  const current = settings.skills;
+  if (Array.isArray(current) && current.length === 1 && current[0] === '!*') {
+    return;
+  }
+  settings.skills = ['!*'];
+  mkdirSync(piDir, { recursive: true });
+  writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
+  console.log('  pi: disabled skill auto-discovery in ~/.pi/agent/settings.json');
+}
+
 export function installSandcastle() {
   const installed = getInstalledVersion('sandcastle');
   const latest = getNpmLatestVersion('@ai-hero/sandcastle');
@@ -1449,6 +1466,7 @@ async function main() {
 
   // pi (pi-coding-agent) — cheap executor for sandcastle tasks
   installPi();
+  disablePiSkills();
 
   // sandcastle (@ai-hero/sandcastle) — global CLI; per-project init lives behind -p
   installSandcastle();
