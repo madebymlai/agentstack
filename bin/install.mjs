@@ -346,8 +346,10 @@ export async function setupSandcastleForProject() {
     return;
   }
 
-  console.log('  npm install --save-dev @ai-hero/sandcastle');
-  execSync('npm install --save-dev @ai-hero/sandcastle', { stdio: 'inherit' });
+  console.log('  Installing @ai-hero/sandcastle...');
+  execSync('npm install --save-dev --loglevel=error @ai-hero/sandcastle', { stdio: 'pipe' });
+  const scVer = getNpmLatestVersion('@ai-hero/sandcastle');
+  console.log(`  sandcastle ${scVer || 'latest'} installed`);
 
   if (existsSync('.sandcastle')) {
     console.log('  sandcastle: .sandcastle/ already exists, skipping init');
