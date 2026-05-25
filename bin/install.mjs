@@ -301,10 +301,10 @@ export function installSandcastle() {
 
 function getPiModels() {
   try {
-    const output = execSync('pi --list-models', {
+    const output = execSync('pi --list-models 2>&1', {
       encoding: 'utf8',
       timeout: 15000,
-      stdio: ['ignore', 'pipe', 'ignore'],
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
     const lines = output.trim().split('\n').slice(1);
     return lines
