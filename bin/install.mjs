@@ -85,11 +85,23 @@ export async function withRetry(fn, opts = {}) {
   }
 }
 
+function getGithubToken() {
+  const fromEnv = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+  if (fromEnv) return fromEnv;
+  try {
+    return execSync('gh auth token', { encoding: 'utf8', timeout: 5000, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  } catch {
+    return null;
+  }
+}
+
 function httpsGetJsonOnce(url, redirects = 0) {
   if (redirects > 5) return Promise.reject(new Error(`Too many redirects fetching ${url}`));
   return new Promise((resolve, reject) => {
-    const opts = { headers: { 'User-Agent': 'installer' } };
-    https.get(url, opts, (res) => {
+    const headers = { 'User-Agent': 'agentstack-installer' };
+    const token = url.includes('api.github.com') ? getGithubToken() : null;
+    if (token) headers['Authorization'] = `token ${token}`;
+    https.get(url, { headers }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         return httpsGetJsonOnce(res.headers.location, redirects + 1).then(resolve, reject);
       }
