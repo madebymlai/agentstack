@@ -293,6 +293,16 @@ export async function setupSandcastleForProject() {
   const scVer = getNpmLatestVersion('@ai-hero/sandcastle');
   console.log(`  sandcastle ${scVer || 'latest'} installed`);
 
+  const pkgPath = resolve('.', 'package.json');
+  if (existsSync(pkgPath)) {
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+    if (!pkg.type) {
+      pkg.type = 'module';
+      writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+      console.log('  package.json: added "type": "module" for top-level await support');
+    }
+  }
+
   if (existsSync('.sandcastle')) {
     console.log('  sandcastle: .sandcastle/ already exists, skipping init');
   } else {
