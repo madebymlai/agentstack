@@ -290,7 +290,7 @@ export async function setupSandcastleForProject() {
   }
 
   console.log('  Installing @ai-hero/sandcastle...');
-  execSync('npm install --save-dev --loglevel=error @ai-hero/sandcastle', { stdio: 'pipe' });
+  execSync('npm install --save-dev --loglevel=error @ai-hero/sandcastle@latest', { stdio: 'pipe' });
   const scVer = getNpmLatestVersion('@ai-hero/sandcastle');
   console.log(`  sandcastle ${scVer || 'latest'} installed`);
 
