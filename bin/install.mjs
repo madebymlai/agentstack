@@ -317,7 +317,7 @@ export async function setupSandcastleForProject() {
 
     const selectedModel = await singleSelect('Which model?', models);
 
-    const initCmd = `npx sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review`;
+    const initCmd = `npx sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox podman`;
     console.log(`  ${initCmd}`);
     execSync(initCmd, { stdio: 'inherit' });
 
@@ -335,17 +335,13 @@ function rewriteSandcastleMain() {
 
   const original = content;
 
-  content = content.replace(
-    'import { docker } from "@ai-hero/sandcastle/sandboxes/docker"',
-    'import { podman } from "@ai-hero/sandcastle/sandboxes/podman"',
-  );
   content = content.replaceAll(
-    'docker()',
+    'podman()',
     'podman({ mounts: [{ hostPath: "~/.pi/agent", sandboxPath: "~/.pi/agent" }] })',
   );
 
   if (content === original) {
-    console.log('  sandcastle: main.ts did not match expected docker() pattern, skipping rewrite');
+    console.log('  sandcastle: main.ts did not match expected podman() pattern, skipping rewrite');
     return;
   }
 
