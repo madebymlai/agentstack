@@ -1326,7 +1326,7 @@ export function installMattpocockSkills(tools) {
 }
 
 export function setupProject() {
-  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json']);
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json', '.beads-credential-key']);
 
   if (!existsSync('AGENTS.md')) {
     let template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');
