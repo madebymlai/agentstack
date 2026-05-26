@@ -317,7 +317,7 @@ export async function setupSandcastleForProject() {
 
     const selectedModel = await singleSelect('Which model?', models);
 
-    const initCmd = `npx sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox podman`;
+    const initCmd = `npx @ai-hero/sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox podman`;
     console.log(`  ${initCmd}`);
     execSync(initCmd, { stdio: 'inherit' });
 
