@@ -257,6 +257,7 @@ export function disablePiSkills() {
   console.log('  pi: disabled skill auto-discovery in ~/.pi/agent/settings.json');
 }
 
+
 function getPiModels() {
   try {
     const output = execSync('pi --list-models 2>&1', {
@@ -319,7 +320,37 @@ export async function setupSandcastleForProject() {
     const initCmd = `npx sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review`;
     console.log(`  ${initCmd}`);
     execSync(initCmd, { stdio: 'inherit' });
+
+    rewriteSandcastleMain();
   }
+}
+
+function rewriteSandcastleMain() {
+  const candidates = ['main.ts', 'main.mts'];
+  const mainFile = candidates.find(f => existsSync(resolve('.sandcastle', f)));
+  if (!mainFile) return;
+
+  const mainPath = resolve('.sandcastle', mainFile);
+  let content = readFileSync(mainPath, 'utf-8');
+
+  const original = content;
+
+  content = content.replace(
+    'import { docker } from "@ai-hero/sandcastle/sandboxes/docker"',
+    'import { podman } from "@ai-hero/sandcastle/sandboxes/podman"',
+  );
+  content = content.replaceAll(
+    'docker()',
+    'podman({ mounts: [{ hostPath: "~/.pi/agent", sandboxPath: "~/.pi/agent" }] })',
+  );
+
+  if (content === original) {
+    console.log('  sandcastle: main.ts did not match expected docker() pattern, skipping rewrite');
+    return;
+  }
+
+  writeFileSync(mainPath, content);
+  console.log('  sandcastle: rewrote main.ts → podman with ~/.pi/agent mount');
 }
 
 const TARGET_MAP = {
