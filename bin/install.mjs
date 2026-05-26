@@ -293,16 +293,6 @@ export async function setupSandcastleForProject() {
   const scVer = getNpmLatestVersion('@ai-hero/sandcastle');
   console.log(`  sandcastle ${scVer || 'latest'} installed`);
 
-  const pkgPath = resolve('.', 'package.json');
-  if (existsSync(pkgPath)) {
-    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-    if (!pkg.type) {
-      pkg.type = 'module';
-      writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-      console.log('  package.json: added "type": "module" for top-level await support');
-    }
-  }
-
   if (existsSync('.sandcastle')) {
     console.log('  sandcastle: .sandcastle/ already exists, skipping init');
   } else {
@@ -1335,8 +1325,24 @@ export function installMattpocockSkills(tools) {
   }
 }
 
+export function ensureEsmPackageJson() {
+  const pkgPath = resolve('.', 'package.json');
+  if (existsSync(pkgPath)) {
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+    if (!pkg.type) {
+      pkg.type = 'module';
+      writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+      console.log('  package.json: added "type": "module"');
+    }
+  } else {
+    writeFileSync(pkgPath, JSON.stringify({ type: 'module' }, null, 2) + '\n');
+    console.log('  package.json: created with "type": "module"');
+  }
+}
+
 export function setupProject() {
   ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json', '.beads-credential-key']);
+  ensureEsmPackageJson();
 
   if (!existsSync('AGENTS.md')) {
     let template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');
