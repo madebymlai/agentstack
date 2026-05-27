@@ -33,8 +33,8 @@ Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
 | [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). Bundled `beads` skill installed globally for selected tools. `-p` also runs `bd init --server --non-interactive --quiet --stealth` to create the project's `.beads/` DB without writing `AGENTS.md`, `.claude/settings.json`, hooks, or a bootstrap commit (agentstack manages those itself); `.beads/` is added to `.git/info/exclude`. |
 | [**pi**](https://github.com/earendil-works/pi-mono) | `@earendil-works/pi-coding-agent` installed globally (`npm install -g`). Minimal coding agent (4 tools, ~1K-token system prompt) used as the default sandcastle executor. |
 | [**sandcastle**](https://github.com/mattpocock/sandcastle) | `@ai-hero/sandcastle` CLI installed globally (`npm install -g`) for sandboxed agent orchestration via Docker / Podman / Vercel. `-p` also runs `sandcastle init --agent pi --template parallel-planner-with-review` (interactive — pick sandbox provider and backlog manager) and `npm link @ai-hero/sandcastle` so `.sandcastle/main.ts` resolves the global package without modifying `package.json`. `.sandcastle/` is added to `.git/info/exclude`. |
-| **AGENTS.md** | Principles template + tokf section |
-| **.git/info/exclude** | Local-only ignores (not committed) for .claude/, .codex/, .opencode/, .sandcastle/, CLAUDE.md, AGENTS.md, CONTEXT.md, .mcp.json |
+| [**AGENTS.md**](https://agents.md/) | Principles template + tokf section |
+| [**.git/info/exclude**](https://git-scm.com/docs/gitignore) | Local-only ignores (not committed) for .claude/, .codex/, .opencode/, .sandcastle/, CLAUDE.md, AGENTS.md, CONTEXT.md, .mcp.json |
 
 ## Built-in skills
 
