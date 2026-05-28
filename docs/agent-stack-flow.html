@@ -27,9 +27,18 @@
   /* command / CTA */
   .cmd{font-family:var(--mono); font-size:14.5px; background:#070809;
        border:1px solid var(--border); padding:15px 18px; color:#dfe9ff;
-       display:flex; align-items:center; gap:10px; overflow-x:auto}
+       display:flex; align-items:center; gap:10px; cursor:pointer}
   .cmd::before{content:"$"; color:var(--accent2); font-weight:700}
-  .cmd .muted{color:#5f6b78}
+  .cmd-txt{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  /* copy button — GitHub-style */
+  .copy-btn{margin-left:auto; flex:0 0 auto; display:inline-flex; align-items:center;
+            justify-content:center; width:30px; height:30px; color:var(--muted);
+            border:1px solid var(--border); background:transparent}
+  .copy-btn svg{display:block}
+  .cmd:hover .copy-btn{color:var(--text); border-color:#3a414c}
+  .copy-btn .ico-check{display:none; color:var(--accent2)}
+  .copied .copy-btn .ico-copy{display:none}
+  .copied .copy-btn .ico-check{display:block}
 
   /* prose */
   .prose{color:#c2ccd6; font-size:16px; line-height:1.75; max-width:680px; margin:0 0 18px}
@@ -72,20 +81,13 @@
   .hs-head h1 .ac{color:var(--accent)}
   .hs-head p{color:var(--muted); font-size:17px; margin:20px 0 0; max-width:620px}
   .hs-head p b{color:var(--text); font-weight:600}
-  .hs-tools{display:grid; grid-template-columns:1fr 1fr; gap:0; margin:38px 0 0;
-            border:1px solid var(--border)}
-  .hs-tool{padding:15px 18px; border-right:1px solid var(--border); border-bottom:1px solid var(--border)}
-  .hs-tool:nth-child(2n){border-right:none}
-  .hs-tool:nth-last-child(-n+2){border-bottom:none}
-  .hs-tool .n{font-family:var(--mono); font-size:13.5px; font-weight:700; color:var(--accent2)}
-  .hs-tool .r{color:var(--muted); font-size:12.5px; margin-top:3px}
+  .hs-prose{color:#c2ccd6; font-size:17px; line-height:1.75; margin:36px 0 0; max-width:690px}
+  .hs-prose strong{color:var(--accent2); font-weight:600}
   .hs-cta{margin-top:auto}
   .hs-cmd{font-family:var(--mono); font-size:15px; background:#070809;
           border:1px solid var(--border); padding:16px 18px; color:#dfe9ff;
           display:flex; align-items:center; gap:10px}
   .hs-cmd::before{content:"$"; color:var(--accent2); font-weight:700}
-  .hs-foot{color:#5f6b78; font-family:var(--mono); font-size:12px; margin:14px 0 0;
-           text-transform:uppercase; letter-spacing:.1em}
 </style>
 </head>
 <body>
@@ -104,33 +106,17 @@
          <b>OpenCode</b> — no per-agent setup.</p>
     </div>
 
-    <div class="hs-tools">
-      <div class="hs-tool"><div class="n">tokf</div><div class="r">Compresses command output</div></div>
-      <div class="hs-tool"><div class="n">codebase-memory</div><div class="r">A queryable graph of your code</div></div>
-      <div class="hs-tool"><div class="n">skills</div><div class="r">Reusable agent workflows</div></div>
-      <div class="hs-tool"><div class="n">beads</div><div class="r">Issue tracking with dependencies</div></div>
-      <div class="hs-tool"><div class="n">pi</div><div class="r">A small, fast coding agent</div></div>
-      <div class="hs-tool"><div class="n">sandcastle</div><div class="r">Runs agents in a sandbox</div></div>
-    </div>
+    <p class="hs-prose">The tools feed each other. <strong>beads</strong> tracks the work and its
+      dependencies; an agent claims a ready issue, reads the code through
+      <strong>codebase-memory</strong>'s graph, and follows a workflow from <strong>skills</strong> —
+      while <strong>tokf</strong> keeps command output small enough to stay in context. To run it,
+      <strong>sandcastle</strong> drops a <strong>pi</strong> agent into a sandbox and pulls the next
+      issue from beads, closing the loop.</p>
 
     <div class="hs-cta">
       <div class="hs-cmd">npx github:madebymlai/agentstack</div>
-      <p class="hs-foot">Claude Code · Codex · OpenCode</p>
     </div>
   </section>
-
-  <!-- =================== HOW THE TOOLS WORK TOGETHER =================== -->
-  <h2>How the tools work together</h2>
-  <p class="prose">The six tools aren't separate installs — they feed each other.
-    <strong>beads</strong> holds the work: every ready issue, its dependencies, and what to pick up
-    next. An agent claims one, then <strong>codebase-memory</strong> hands it a queryable graph of the
-    code to plan against, and <strong>mattpocock/skills</strong> gives it a proven workflow to follow.
-    <strong>tokf</strong> compresses the command output it reads back along the way, so a long session
-    stays inside the context window.</p>
-  <p class="prose">When it is time to run code, <strong>sandcastle</strong> launches <strong>pi</strong>
-    in a Docker, Podman, or Vercel sandbox and pulls the next ready issue straight from beads —
-    closing the loop where it started. Because the same tools and rules are wired into each agent, the
-    workflow is identical whether you run Claude Code, Codex, or OpenCode.</p>
 
   <!-- =================== SETUP =================== -->
   <h2>Setup, in three steps</h2>
@@ -170,7 +156,15 @@
 
   <!-- =================== CTA =================== -->
   <h2>Get started</h2>
-  <div class="cmd">npx github:madebymlai/agentstack</div>
+  <div class="cmd" data-cmd="npx github:madebymlai/agentstack" role="button" tabindex="0"
+       aria-label="Copy install command" onclick="copyCmd(this)"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();copyCmd(this)}">
+    <span class="cmd-txt">npx github:madebymlai/agentstack</span>
+    <span class="copy-btn">
+      <svg class="ico-copy" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>
+      <svg class="ico-check" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"></path></svg>
+    </span>
+  </div>
   <p class="works">Works with <b>Claude Code</b>, <b>Codex</b>, and <b>OpenCode</b>.</p>
 
   <footer>
@@ -178,5 +172,25 @@
   </footer>
 
 </div>
+<script>
+  function copyCmd(el){
+    var text = el.getAttribute('data-cmd') || '';
+    var done = function(){
+      el.classList.add('copied');
+      clearTimeout(el._t);
+      el._t = setTimeout(function(){ el.classList.remove('copied'); }, 1600);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text); done(); });
+    } else { fallbackCopy(text); done(); }
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+</script>
 </body>
 </html>
