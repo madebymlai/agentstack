@@ -32,6 +32,17 @@ npx github:madebymlai/agentstack --project --rebuild           # or -r; wipe .sa
 npx github:madebymlai/agentstack --project --rebuild --clean   # or -rc; full wipe, including CODING_STANDARDS.md
 ```
 
+## afk
+
+Once installed, `afk` is a bare shell command (served onto your PATH with per-OS launchers — POSIX `sh` on Linux/macOS, `.cmd` on Windows). Run it from a project that has been set up with `--project`:
+
+```bash
+afk            # runs npx tsx .sandcastle/main.ts in the current project
+afk --foo bar  # extra args are forwarded to the run
+```
+
+It launches the sandcastle parallel-planner loop so you can step away from the keyboard. If `.sandcastle/` hasn't been set up yet, it fails fast and points you at `npx github:madebymlai/agentstack --project`.
+
 ## What it does
 
 Prompts you to pick the agents you use (Claude Code, Codex, OpenCode), then installs and configures each of these for them:
