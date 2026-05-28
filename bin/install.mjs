@@ -4,7 +4,6 @@ import https from 'node:https';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, readdirSync, copyFileSync } from 'node:fs';
-import { createInterface } from 'node:readline';
 import { resolve, dirname, win32, delimiter } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir, tmpdir } from 'node:os';
@@ -791,47 +790,6 @@ function hasConcreteEnvValue(value, envVar) {
   return Boolean(value && value !== `\${${envVar}}`);
 }
 
-function concreteMcpEnvValue(name, tool, envVar) {
-  switch (tool) {
-    case 'claude': {
-      const configPath = resolve(homedir(), '.claude.json');
-      if (!existsSync(configPath)) return null;
-      const config = JSON.parse(readFileSync(configPath, 'utf8'));
-      const value = config.mcpServers?.[name]?.env?.[envVar];
-      return hasConcreteEnvValue(value, envVar) ? value : null;
-    }
-      case 'opencode': {
-        const configDir = getOpencodeConfigDir();
-        const configPath = resolve(configDir, 'opencode.json');
-        if (!existsSync(configPath)) return null;
-      const config = JSON.parse(readFileSync(configPath, 'utf8'));
-      const value = config.mcp?.[name]?.environment?.[envVar];
-      return hasConcreteEnvValue(value, envVar) ? value : null;
-    }
-    case 'codex': {
-      const isWin = process.platform === 'win32';
-      const configPath = isWin
-        ? win32.join(process.env.APPDATA, 'codex', 'config.toml')
-        : resolve(homedir(), '.codex', 'config.toml');
-      if (!existsSync(configPath)) return null;
-      const value = codexMcpEnvValue(readFileSync(configPath, 'utf8'), name, envVar);
-      return hasConcreteEnvValue(value, envVar) ? value : null;
-    }
-    default:
-      return null;
-  }
-}
-
-function concreteMcpEnvValues(name, envVar) {
-  return [
-    ...new Set(
-      TOOL_OPTIONS
-        .map(tool => concreteMcpEnvValue(name, tool.value, envVar))
-        .filter(Boolean),
-    ),
-  ];
-}
-
 export function mergeMcpConfig(name, server, tools, envOverrides = {}) {
   if (!server.mcpEntry) return;
   const entry = JSON.parse(JSON.stringify(server.mcpEntry));
@@ -861,65 +819,6 @@ export function mergeMcpConfig(name, server, tools, envOverrides = {}) {
   }
 }
 
-/**
- * @unused Reserved API-key prompt pattern for future installer steps.
- */
-export function promptApiKey(name, envVar) {
-  return new Promise((done) => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-    rl.question(`${name} API key (or press Enter to skip): `, (answer) => {
-      rl.close();
-      const val = answer.trim();
-      if (!val) {
-        console.log(`  Skipped. Set ${envVar} in your shell profile later.`);
-        done(null);
-      } else {
-        done({ key: envVar, value: val });
-      }
-    });
-  });
-}
-
-/**
- * @unused Reserved API-key discovery pattern for future installer steps.
- */
-export async function resolveApiKey({ label, serverName, envVar }, { keys, envOverrides }) {
-  if (process.env[envVar]) {
-    console.log(`  ${label}: found in environment`);
-    return;
-  }
-
-  const configuredValues = concreteMcpEnvValues(serverName, envVar);
-  if (configuredValues.length === 1) {
-    const configuredValue = configuredValues[0];
-    envOverrides[envVar] = configuredValue;
-    process.env[envVar] = configuredValue;
-    keys.push({ key: envVar, value: configuredValue });
-    console.log(`  ${label}: found in existing tool config`);
-    return;
-  }
-  if (configuredValues.length > 1) {
-    const configuredValue = await singleSelect(
-      `${label}: multiple existing values found. Select one to use:`,
-      configuredValues.map(value => ({
-        label: maskSecret(value),
-        value,
-      })),
-    );
-    envOverrides[envVar] = configuredValue;
-    process.env[envVar] = configuredValue;
-    keys.push({ key: envVar, value: configuredValue });
-    console.log(`  ${label}: selected existing tool config value`);
-    return;
-  }
-
-  const k = await promptApiKey(label, envVar);
-  if (k) {
-    keys.push(k);
-    process.env[envVar] = k.value;
-  }
-}
-
 function getShellProfile() {
   const shell = process.env.SHELL || '';
   if (shell.endsWith('/zsh')) return resolve(homedir(), '.zshrc');
@@ -927,9 +826,8 @@ function getShellProfile() {
   return resolve(homedir(), '.bashrc');
 }
 
-/**
- * @unused Reserved API-key persistence pattern for future installer steps.
- */
+// Persists environment variables (e.g. CLAUDE_CODE_MAX_CONTEXT_TOKENS) to the
+// user's shell profile, or via `setx` on Windows.
 export function writeEnvVars(keys) {
   if (!keys.length) return;
 
@@ -959,25 +857,6 @@ export function writeEnvVars(keys) {
     console.log(`  Added ${added.join(', ')} to ${profile}`);
   }
 }
-
-/**
- * @unused Reserved API-key collection + MCP config pattern for future installer steps.
- */
-export async function mergeMcpConfigWithApiKeys(name, server, tools, keySpecs) {
-  console.log('\nAPI Keys\n');
-  const keys = [];
-  const envOverrides = {};
-
-  for (const spec of keySpecs) {
-    await resolveApiKey(spec, { keys, envOverrides });
-  }
-
-  if (keys.length) writeEnvVars(keys);
-
-  Object.assign(envOverrides, Object.fromEntries(keys.map(({ key, value }) => [key, value])));
-  mergeMcpConfig(name, server, tools, envOverrides);
-}
-
 
 export function ensureBypassPermissions(tools) {
   console.log('\nConfiguring permissions...');
@@ -1157,11 +1036,6 @@ export function singleSelect(prompt, options) {
 
     process.stdin.on('data', onKey);
   });
-}
-
-function maskSecret(value) {
-  if (value.length <= 10) return '*'.repeat(value.length);
-  return `${value.slice(0, 6)}...${value.slice(-4)}`;
 }
 
 const TOOL_OPTIONS = [
