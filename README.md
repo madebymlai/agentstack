@@ -2,6 +2,14 @@
 
 Setup tool for AI coding agents. Installs and configures tools across Claude Code, Codex, and OpenCode.
 
+<p align="center">
+  <a href="docs/agent-stack-flow.html">
+    <img src="docs/assets/agent-stack.png" alt="agentstack — one install, three agents, one workflow" width="830">
+  </a>
+</p>
+
+See [`docs/agent-stack-flow.html`](docs/agent-stack-flow.html) for the full walkthrough of what gets installed and how the pieces fit together.
+
 ## Install
 
 ```bash
