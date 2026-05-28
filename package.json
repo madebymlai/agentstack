@@ -19,6 +19,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@ai-hero/sandcastle": "^0.6.3"
+    "@ai-hero/sandcastle": "^0.6.4"
   }
 }

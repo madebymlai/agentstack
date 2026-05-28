@@ -1385,7 +1385,7 @@ export function ensureEsmPackageJson() {
 }
 
 export function setupProject() {
-  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json', '.beads-credential-key']);
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json', '.beads/', '.beads-credential-key']);
   ensureEsmPackageJson();
 
   if (!existsSync('AGENTS.md')) {
