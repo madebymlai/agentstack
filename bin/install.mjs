@@ -323,6 +323,8 @@ export async function setupSandcastleForProject() {
 
     rewriteSandcastleMain();
   }
+
+  rewriteSandcastlePlanPrompt();
 }
 
 function rewriteSandcastleMain() {
@@ -347,6 +349,21 @@ function rewriteSandcastleMain() {
 
   writeFileSync(mainPath, content);
   console.log('  sandcastle: rewrote main.ts → podman with ~/.pi/agent mount');
+}
+
+function rewriteSandcastlePlanPrompt() {
+  const promptPath = resolve('.sandcastle', 'plan-prompt.md');
+  if (!existsSync(promptPath)) return;
+
+  let content = readFileSync(promptPath, 'utf-8');
+  const original = content;
+
+  content = content.replace(/bd ready(?! --exclude-type=epic)/g, 'bd ready --exclude-type=epic -l=ready-for-agent');
+
+  if (content === original) return;
+
+  writeFileSync(promptPath, content);
+  console.log('  sandcastle: plan-prompt.md → bd ready --exclude-type=epic');
 }
 
 const TARGET_MAP = {
@@ -1368,7 +1385,7 @@ export function ensureEsmPackageJson() {
 }
 
 export function setupProject() {
-  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json', '.beads-credential-key']);
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json', '.beads/', '.beads-credential-key']);
   ensureEsmPackageJson();
 
   if (!existsSync('AGENTS.md')) {

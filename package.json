@@ -14,5 +14,11 @@
     "type": "git",
     "url": "https://github.com/madebymlai/agentstack.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@ai-hero/sandcastle": "^0.6.4"
+  }
 }
