@@ -3,395 +3,186 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>agentstack — The Agent Stack &amp; How It Fits Together</title>
+<title>agentstack — set up every coding agent with one command</title>
 <style>
   :root{
-    --bg:#0e1117; --panel:#161b22; --panel2:#1c2330; --border:#2b3442;
-    --text:#e6edf3; --muted:#9aa7b4; --accent:#4ea1ff; --accent2:#7ee787;
-    --warn:#f0b429; --pink:#ff7b9c; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --bg:#0b0d10; --panel:#13161b; --panel2:#181c22; --border:#262b33;
+    --text:#e8edf2; --muted:#8b96a3; --accent:#5b9dff; --accent2:#69db9b;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box}
   body{
     margin:0; background:var(--bg); color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.55; font-size:16px;
+    line-height:1.55; font-size:16px; -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:1080px; margin:0 auto; padding:48px 24px 96px}
-  header.page{border-bottom:1px solid var(--border); padding-bottom:24px; margin-bottom:40px}
-  h1{font-size:30px; margin:0 0 6px; letter-spacing:-.4px}
-  .sub{color:var(--muted); font-size:15px; margin:0}
-  h2{font-size:21px; margin:48px 0 16px; letter-spacing:-.2px;
-     border-left:3px solid var(--accent); padding-left:12px}
-  h3{font-size:16px; margin:0 0 6px}
-  p{color:var(--text)}
-  code{font-family:var(--mono); font-size:.88em; background:#222b38;
-       border:1px solid var(--border); border-radius:5px; padding:1px 6px; color:#cfe3ff}
+  .wrap{max-width:880px; margin:0 auto; padding:0 24px 110px}
   a{color:var(--accent); text-decoration:none}
   a:hover{text-decoration:underline}
-  .lead{color:var(--muted); font-size:16.5px; max-width:780px}
+  code{font-family:var(--mono); font-size:.9em; background:#1b1f26;
+       border:1px solid var(--border); padding:1px 6px; color:#cfe0ff}
+  h2{font-size:12.5px; text-transform:uppercase; letter-spacing:.14em; color:var(--muted);
+     font-weight:700; margin:72px 0 22px; padding-bottom:12px; border-bottom:1px solid var(--border)}
 
-  /* Tool stack */
-  .layers{display:grid; gap:10px; margin:20px 0}
-  .layer{background:var(--panel); border:1px solid var(--border); border-radius:10px;
-         padding:14px 18px; display:flex; gap:16px; align-items:center}
-  .layer .tag{font-family:var(--mono); font-size:11px; text-transform:uppercase;
-              letter-spacing:.5px; color:var(--bg); background:var(--accent);
-              border-radius:20px; padding:4px 11px; white-space:nowrap; font-weight:700; min-width:118px; text-align:center}
-  .layer.l2 .tag{background:var(--accent2)} .layer.l3 .tag{background:var(--warn)}
-  .layer.l4 .tag{background:var(--pink)}
-  .layer .body{color:var(--muted); font-size:14.5px}
-  .layer .body strong{color:var(--text); font-weight:600}
+  /* command / CTA */
+  .cmd{font-family:var(--mono); font-size:14.5px; background:#070809;
+       border:1px solid var(--border); padding:15px 18px; color:#dfe9ff;
+       display:flex; align-items:center; gap:10px; overflow-x:auto}
+  .cmd::before{content:"$"; color:var(--accent2); font-weight:700}
+  .cmd .muted{color:#5f6b78}
 
-  /* Flow */
-  .flow{counter-reset:step; margin:20px 0}
-  .step{position:relative; background:var(--panel); border:1px solid var(--border);
-        border-radius:12px; padding:18px 20px 18px 64px; margin:0 0 14px}
-  .step::before{counter-increment:step; content:counter(step);
-        position:absolute; left:16px; top:16px; width:32px; height:32px;
-        background:var(--accent); color:#06101e; border-radius:50%;
-        display:flex; align-items:center; justify-content:center;
-        font-weight:800; font-family:var(--mono)}
-  .step h3{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-  .step .where{font-family:var(--mono); font-size:11.5px; color:var(--muted);
-        background:var(--panel2); border:1px solid var(--border);
-        border-radius:5px; padding:2px 7px}
-  .step p{margin:6px 0 0; color:var(--muted); font-size:14.5px}
-  .step .cmds{margin-top:10px; font-family:var(--mono); font-size:12.5px;
-        background:#0a0e14; border:1px solid var(--border); border-radius:8px;
-        padding:10px 12px; color:#cfe3ff; overflow-x:auto}
-  .step .cmds .c{display:block; white-space:nowrap}
-  .step .cmds .c::before{content:"$ "; color:var(--accent2)}
-  .arrow{text-align:center; color:var(--border); font-size:18px; margin:-6px 0 8px; line-height:1}
+  /* what you get */
+  .tools{display:grid; grid-template-columns:1fr 1fr; gap:0; margin:0;
+         border:1px solid var(--border)}
+  .tool{padding:20px 22px; border-right:1px solid var(--border); border-bottom:1px solid var(--border)}
+  .tool:nth-child(2n){border-right:none}
+  .tool:nth-last-child(-n+2){border-bottom:none}
+  .tool .n{font-family:var(--mono); font-size:14.5px; font-weight:700; color:var(--accent2)}
+  .tool .r{color:var(--muted); font-size:14px; margin-top:5px}
 
-  /* card grid */
-  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; margin:18px 0}
-  .card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px}
-  .card h3{font-size:14.5px; color:var(--accent2)}
-  .card p{margin:4px 0 0; font-size:13.5px; color:var(--muted)}
+  /* how it works */
+  .steps{display:grid; gap:0; border:1px solid var(--border)}
+  .step{display:flex; gap:20px; padding:22px 24px; border-bottom:1px solid var(--border)}
+  .step:last-child{border-bottom:none}
+  .step .num{font-family:var(--mono); font-size:13px; font-weight:700; color:var(--accent);
+             flex:0 0 26px; padding-top:2px}
+  .step h3{margin:0 0 5px; font-size:16px}
+  .step p{margin:0; color:var(--muted); font-size:14.5px}
 
-  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14px}
-  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top}
-  th{color:var(--muted); font-weight:600; font-size:12.5px; text-transform:uppercase; letter-spacing:.4px}
-  td code{font-size:12.5px}
-  .pill{font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:20px;
-        border:1px solid var(--border); color:var(--muted)}
-  footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border);
-          color:var(--muted); font-size:13px}
-  .note{background:var(--panel2); border:1px solid var(--border); border-left:3px solid var(--warn);
-        border-radius:8px; padding:12px 16px; color:var(--muted); font-size:14px; margin:18px 0}
+  /* files */
+  .files{display:grid; gap:0; border:1px solid var(--border); font-size:14.5px}
+  .file{display:flex; gap:16px; padding:13px 20px; border-bottom:1px solid var(--border); align-items:baseline}
+  .file:last-child{border-bottom:none}
+  .file .k{font-family:var(--mono); color:var(--accent2); flex:0 0 168px; font-size:13.5px}
+  .file .v{color:var(--muted)}
 
-  /* === Square hero — 830×830, matches README (GitHub) width sizing.
-        Screenshot #hero-square to produce the README image (docs/assets/agent-stack.png). === */
+  .works{color:var(--muted); font-size:14.5px; margin:14px 0 0}
+  .works b{color:var(--text); font-weight:600}
+  footer{margin-top:80px; padding-top:22px; border-top:1px solid var(--border);
+          color:#5f6b78; font-size:13px}
+
+  /* =================== SQUARE HERO — 830×830, flat, sharp =================== */
   #hero-square{
     width:830px; height:830px; max-width:100%;
-    margin:0 auto 56px; position:relative; overflow:hidden;
-    background:
-      radial-gradient(900px 500px at 80% -10%, rgba(78,161,255,.20), transparent 60%),
-      radial-gradient(700px 480px at -6% 110%, rgba(126,231,135,.12), transparent 55%),
-      linear-gradient(180deg,#11161f 0%, #0c0f15 100%);
-    border:1px solid var(--border); border-radius:24px;
-    padding:48px 48px 44px; display:flex; flex-direction:column;
+    margin:64px auto 0; background:var(--panel); border:1px solid var(--border);
+    padding:56px; display:flex; flex-direction:column;
   }
-  .hs-brand{display:flex; align-items:center; gap:12px}
-  .hs-mark{width:30px; height:30px; border-radius:9px;
-    background:linear-gradient(135deg,var(--accent),#2f6fd6);
-    box-shadow:0 0 0 1px rgba(255,255,255,.06), 0 6px 18px rgba(78,161,255,.35)}
-  .hs-brand .name{font-weight:800; letter-spacing:-.3px; font-size:19px; font-family:var(--mono)}
-  .hs-brand .ver{margin-left:auto; font-family:var(--mono); font-size:11px;
-    color:var(--muted); border:1px solid var(--border); border-radius:20px; padding:4px 10px}
-  .hs-head{margin:28px 0 0}
-  .hs-head h1{font-size:42px; line-height:1.05; letter-spacing:-1px; margin:0}
-  .hs-head .accent{color:var(--accent)}
-  .hs-head p{color:var(--muted); font-size:15.5px; margin:14px 0 0; max-width:600px}
+  .hs-brand{display:flex; align-items:center; gap:11px; padding-bottom:22px;
+            border-bottom:1px solid var(--border)}
+  .hs-mark{width:22px; height:22px; background:var(--accent)}
+  .hs-brand .name{font-family:var(--mono); font-weight:700; font-size:18px; letter-spacing:-.2px}
+  .hs-brand .kicker{margin-left:auto; font-family:var(--mono); font-size:11.5px;
+            text-transform:uppercase; letter-spacing:.12em; color:var(--muted)}
+  .hs-head{margin:40px 0 0}
+  .hs-head h1{font-size:50px; line-height:1.04; letter-spacing:-1.4px; margin:0; font-weight:800}
+  .hs-head h1 .ac{color:var(--accent)}
+  .hs-head p{color:var(--muted); font-size:17px; margin:20px 0 0; max-width:620px}
   .hs-head p b{color:var(--text); font-weight:600}
-  .hs-tools{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:30px 0 0}
-  .hs-tool{background:rgba(255,255,255,.025); border:1px solid var(--border);
-    border-radius:11px; padding:12px 14px}
+  .hs-tools{display:grid; grid-template-columns:1fr 1fr; gap:0; margin:38px 0 0;
+            border:1px solid var(--border)}
+  .hs-tool{padding:15px 18px; border-right:1px solid var(--border); border-bottom:1px solid var(--border)}
+  .hs-tool:nth-child(2n){border-right:none}
+  .hs-tool:nth-last-child(-n+2){border-bottom:none}
   .hs-tool .n{font-family:var(--mono); font-size:13.5px; font-weight:700; color:var(--accent2)}
   .hs-tool .r{color:var(--muted); font-size:12.5px; margin-top:3px}
-  .hs-flow{margin-top:auto; padding-top:28px}
-  .hs-flow .lbl{font-family:var(--mono); font-size:11px; letter-spacing:.5px;
-    text-transform:uppercase; color:var(--muted); margin:0 0 12px}
-  .hs-chain{display:flex; align-items:center; gap:7px; flex-wrap:nowrap}
-  .hs-node{flex:1; text-align:center; font-family:var(--mono); font-size:12px;
-    color:var(--text); background:var(--panel); border:1px solid var(--border);
-    border-radius:9px; padding:11px 3px}
-  .hs-arr{color:var(--accent); font-size:13px; flex:0 0 auto}
-  .hs-loop{display:flex; align-items:center; gap:8px; margin-top:14px;
-    color:var(--accent2); font-family:var(--mono); font-size:11.5px}
-  .hs-loop::before{content:""; flex:1; height:1px;
-    background:linear-gradient(90deg,transparent,var(--border))}
-  .hs-loop::after{content:""; flex:1; height:1px;
-    background:linear-gradient(90deg,var(--border),transparent)}
+  .hs-cta{margin-top:auto}
+  .hs-cmd{font-family:var(--mono); font-size:15px; background:#070809;
+          border:1px solid var(--border); padding:16px 18px; color:#dfe9ff;
+          display:flex; align-items:center; gap:10px}
+  .hs-cmd::before{content:"$"; color:var(--accent2); font-weight:700}
+  .hs-foot{color:#5f6b78; font-family:var(--mono); font-size:12px; margin:14px 0 0;
+           text-transform:uppercase; letter-spacing:.1em}
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <!-- =================== SQUARE HERO (830×830, README width) =================== -->
-  <section id="hero-square" aria-label="agentstack — one install, three agents, one workflow">
+  <section id="hero-square" aria-label="agentstack — set up every coding agent with one command">
     <div class="hs-brand">
       <span class="hs-mark"></span>
       <span class="name">agentstack</span>
-      <span class="ver">agent stack installer</span>
+      <span class="kicker">AI coding agent setup</span>
     </div>
 
     <div class="hs-head">
-      <h1>One install.<br>Three agents.<br><span class="accent">One workflow.</span></h1>
-      <p><code>npx agentstack</code> wires six tools into a single workflow shared across
-         <b>Claude Code</b>, <b>Codex</b> &amp; <b>OpenCode</b>.</p>
+      <h1>Set up every coding agent with <span class="ac">one command.</span></h1>
+      <p>The same tools and workflow across <b>Claude Code</b>, <b>Codex</b>, and
+         <b>OpenCode</b> — no per-agent setup.</p>
     </div>
 
     <div class="hs-tools">
-      <div class="hs-tool"><div class="n">tokf</div><div class="r">output compression · 🗜️ hooks</div></div>
-      <div class="hs-tool"><div class="n">codebase-memory</div><div class="r">code knowledge graph (MCP)</div></div>
-      <div class="hs-tool"><div class="n">skills</div><div class="r">curated agent workflows</div></div>
-      <div class="hs-tool"><div class="n">beads · bd</div><div class="r">dependency-aware issues</div></div>
-      <div class="hs-tool"><div class="n">pi</div><div class="r">minimal coding agent</div></div>
-      <div class="hs-tool"><div class="n">sandcastle</div><div class="r">sandboxed orchestration</div></div>
+      <div class="hs-tool"><div class="n">tokf</div><div class="r">Compresses command output</div></div>
+      <div class="hs-tool"><div class="n">codebase-memory</div><div class="r">A queryable graph of your code</div></div>
+      <div class="hs-tool"><div class="n">skills</div><div class="r">Reusable agent workflows</div></div>
+      <div class="hs-tool"><div class="n">beads</div><div class="r">Issue tracking with dependencies</div></div>
+      <div class="hs-tool"><div class="n">pi</div><div class="r">A small, fast coding agent</div></div>
+      <div class="hs-tool"><div class="n">sandcastle</div><div class="r">Runs agents in a sandbox</div></div>
     </div>
 
-    <div class="hs-flow">
-      <p class="lbl">How it fits together · every task</p>
-      <div class="hs-chain">
-        <span class="hs-node">instruct</span><span class="hs-arr">→</span>
-        <span class="hs-node">claim</span><span class="hs-arr">→</span>
-        <span class="hs-node">discover</span><span class="hs-arr">→</span>
-        <span class="hs-node">build</span><span class="hs-arr">→</span>
-        <span class="hs-node">sandbox</span><span class="hs-arr">→</span>
-        <span class="hs-node">ship</span>
-      </div>
-      <div class="hs-loop">same brain across every agent ↺</div>
+    <div class="hs-cta">
+      <div class="hs-cmd">npx github:madebymlai/agentstack</div>
+      <p class="hs-foot">Claude Code · Codex · OpenCode</p>
     </div>
   </section>
 
-  <header class="page">
-    <h1>agentstack — The Agent Stack &amp; How It Fits Together</h1>
-    <p class="sub">What <code>npx agentstack</code> installs, and how the pieces compose into one workflow across Claude Code, Codex, and OpenCode.</p>
-  </header>
+  <!-- =================== WHAT YOU GET =================== -->
+  <h2>What you get</h2>
+  <p style="color:var(--muted); max-width:640px; margin:0 0 20px">
+    Six tools, installed and wired into every agent you pick.</p>
+  <div class="tools">
+    <div class="tool"><div class="n">tokf</div><div class="r">Compresses command output so more fits in context.</div></div>
+    <div class="tool"><div class="n">codebase-memory</div><div class="r">A code knowledge graph your agent queries instead of grepping.</div></div>
+    <div class="tool"><div class="n">mattpocock/skills</div><div class="r">Curated, reusable agent workflows.</div></div>
+    <div class="tool"><div class="n">beads</div><div class="r">An issue tracker that understands dependencies.</div></div>
+    <div class="tool"><div class="n">pi</div><div class="r">A small, fast coding agent — sandcastle's default executor.</div></div>
+    <div class="tool"><div class="n">sandcastle</div><div class="r">Runs agents in a Docker, Podman, or Vercel sandbox.</div></div>
+  </div>
 
-  <p class="lead">
-    <strong>agentstack</strong> is a one-command setup tool for AI coding agents. A single
-    <code>npx github:madebymlai/agentstack</code> installs a shared toolchain — token compression,
-    a code knowledge graph, curated skills, a dependency-aware issue tracker, a minimal agent,
-    and a sandbox orchestrator — then configures all of them for whichever agents you use.
-    The result: <em>Claude Code, Codex, and OpenCode all get the same brain.</em>
-  </p>
-
-  <!-- =================== WHAT IT INSTALLS =================== -->
-  <h2>What it installs</h2>
-  <p class="lead">Six tools, each pulled from its own upstream repo and wired in for every selected agent.</p>
-  <table>
-    <tr><th>Tool</th><th>Source</th><th>Role in the stack</th></tr>
-    <tr>
-      <td><code>tokf</code></td>
-      <td><code>mpecan/tokf</code></td>
-      <td>Token-compression binary (GitHub release) plus per-tool hooks
-          (<code>tokf hook install --global</code>). Compressed output is marked <code>🗜️</code>;
-          <code>tokf raw last</code> restores the full text. <code>/agentstack</code> generates filters under
-          <code>.tokf/filters/</code> or <code>.tokf/rewrites.toml</code>.</td>
-    </tr>
-    <tr>
-      <td><code>codebase-memory</code></td>
-      <td><code>DeusData/codebase-memory-mcp</code></td>
-      <td>Code knowledge-graph MCP server (<code>codebase-memory-mcp</code>), registered as an MCP server
-          for each agent. Configured with <code>auto_index true</code> / <code>auto_index_limit 50000</code>
-          so graph queries (search_graph, trace_path, get_code_snippet) replace blind grep.</td>
-    </tr>
-    <tr>
-      <td><code>mattpocock/skills</code></td>
-      <td><code>mattpocock/skills</code></td>
-      <td>Curated agent skills installed globally per agent via
-          <code>npx skills@latest add mattpocock/skills -g</code>, mapped to each agent
-          (<code>claude-code</code>, <code>codex</code>, <code>opencode</code>).</td>
-    </tr>
-    <tr>
-      <td><code>beads</code> (<code>bd</code>)</td>
-      <td><code>gastownhall/beads</code></td>
-      <td>Dependency-aware issue tracker binary. <code>bd init --stealth</code> creates a project
-          <code>.beads/</code> (Dolt DB, git-synced via <code>refs/dolt/data</code>;
-          <code>issues.jsonl</code> is a passive export) without touching AGENTS.md or hooks.
-          Ships a bundled <code>/beads</code> skill.</td>
-    </tr>
-    <tr>
-      <td><code>pi</code></td>
-      <td><code>earendil-works/pi-mono</code></td>
-      <td><code>@earendil-works/pi-coding-agent</code> (<code>npm install -g</code>) — a minimal coding agent
-          (4 tools, ~1K-token system prompt). Skill auto-discovery is disabled; pi is the default
-          executor that sandcastle drives.</td>
-    </tr>
-    <tr>
-      <td><code>sandcastle</code></td>
-      <td><code>@ai-hero/sandcastle</code></td>
-      <td>Sandboxed agent orchestration over Docker / Podman / Vercel.
-          <code>sandcastle init --agent pi --template parallel-planner-with-review</code> scaffolds
-          <code>.sandcastle/</code>; agentstack points its plan prompt at
-          <code>bd ready --exclude-type=epic -l=ready-for-agent</code>.</td>
-    </tr>
-  </table>
-
-  <!-- =================== THE FOUR LAYERS =================== -->
-  <h2>The stack, in four layers</h2>
-  <div class="layers">
-    <div class="layer l1">
-      <span class="tag">Agents</span>
-      <div class="body">
-        <strong>Claude Code · Codex · OpenCode</strong> — pick any or all at install time
-        (<code>--claude</code>, <code>--codex</code>, <code>--opencode</code>). Every tool below is
-        configured for each agent you select, so the workflow is identical wherever you run it.
+  <!-- =================== HOW IT WORKS =================== -->
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <h3>Run one command</h3>
+        <p>Run <code>npx github:madebymlai/agentstack</code> and pick the agents you use.</p>
       </div>
     </div>
-    <div class="layer l2">
-      <span class="tag">Instructions</span>
-      <div class="body">
-        <strong>AGENTS.md</strong> (principles template + the <code>tokf</code> convention) ·
-        <strong>CLAUDE.md</strong> (<code>@AGENTS.md</code> + beads integration + session-completion protocol) ·
-        <strong>CONTEXT.md</strong> (domain language). Tuned interactively by the <code>/agentstack</code> skill.
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <h3>agentstack sets everything up</h3>
+        <p>It installs the tools, registers the code-graph MCP server and tokf hooks, and writes your
+           <code>AGENTS.md</code> and <code>CLAUDE.md</code>.</p>
       </div>
     </div>
-    <div class="layer l3">
-      <span class="tag">Live tools</span>
-      <div class="body">
-        <strong>beads (<code>bd</code>)</strong> — issues ·
-        <strong>codebase-memory</strong> — code graph (MCP) ·
-        <strong>tokf</strong> — output compression ·
-        <strong>mattpocock/skills</strong> — reusable workflows.
-      </div>
-    </div>
-    <div class="layer l4">
-      <span class="tag">Execution</span>
-      <div class="body">
-        <strong>sandcastle</strong> orchestrates <strong>pi</strong> inside a Docker / Podman / Vercel
-        sandbox using the <code>parallel-planner-with-review</code> template — planning, building,
-        and reviewing work pulled straight from beads.
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <h3>Every agent works the same</h3>
+        <p>Claude Code, Codex, and OpenCode share the same tools, issues, skills, and principles.</p>
       </div>
     </div>
   </div>
 
-  <!-- =================== HOW IT FITS TOGETHER =================== -->
-  <h2>How it all fits together</h2>
-  <p class="lead">One install, then the same loop for every task — and the same loop on every agent.</p>
-
-  <div class="flow">
-
-    <div class="step">
-      <h3>Install &amp; configure <span class="where">npx agentstack</span></h3>
-      <p>Select Claude Code, Codex, and/or OpenCode. agentstack installs the global tools, registers
-        the codebase-memory MCP server and tokf hooks per agent, writes <code>AGENTS.md</code> /
-        <code>CLAUDE.md</code>, and adds local-only ignores to <code>.git/info/exclude</code>.</p>
-      <div class="cmds">
-        <span class="c">npx github:madebymlai/agentstack</span>
-        <span class="c">npx github:madebymlai/agentstack --claude --codex --opencode</span>
-        <span class="c">npx github:madebymlai/agentstack --project   <span style="color:#5b6776"># project files only</span></span>
-      </div>
-    </div>
-    <div class="arrow">↓</div>
-
-    <div class="step">
-      <h3>Instruct <span class="where">AGENTS.md · CLAUDE.md</span></h3>
-      <p>Every session loads the principles, the <code>🗜️ tokf</code> convention, and the beads rules.
-        Run <code>/agentstack</code> to probe the codebase and write principles, tokf filters, and
-        sandcastle coding standards.</p>
-    </div>
-    <div class="arrow">↓</div>
-
-    <div class="step">
-      <h3>Claim work <span class="where">beads (bd)</span></h3>
-      <p>Pull unblocked, AFK-ready work from the dependency-aware tracker. Epics are containers —
-        implement their children, not the epic.</p>
-      <div class="cmds">
-        <span class="c">bd ready --exclude-type=epic</span>
-        <span class="c">bd show &lt;id&gt;</span>
-        <span class="c">bd update &lt;id&gt; --claim</span>
-      </div>
-    </div>
-    <div class="arrow">↓</div>
-
-    <div class="step">
-      <h3>Discover code <span class="where">codebase-memory</span></h3>
-      <p>Navigate the auto-indexed knowledge graph instead of scanning files —
-        <code>search_graph</code>, <code>trace_path</code>, <code>get_code_snippet</code> — and fall
-        back to grep only for plain text and config.</p>
-    </div>
-    <div class="arrow">↓</div>
-
-    <div class="step">
-      <h3>Build <span class="where">mattpocock/skills · tokf</span></h3>
-      <p>Work through curated skills against the stack's principles. tokf compresses noisy command
-        output (<code>🗜️</code>) so more of the task fits in context; <code>tokf raw last</code> recovers
-        the full output when needed.</p>
-    </div>
-    <div class="arrow">↓</div>
-
-    <div class="step">
-      <h3>Sandbox &amp; review <span class="where">sandcastle · pi</span></h3>
-      <p>Hand execution to sandcastle: it runs pi inside a Docker / Podman / Vercel sandbox via the
-        <code>parallel-planner-with-review</code> template, pulling ready work directly from beads
-        (<code>bd ready --exclude-type=epic -l=ready-for-agent</code>).</p>
-    </div>
-    <div class="arrow">↓</div>
-
-    <div class="step">
-      <h3>Ship &amp; remember <span class="where">beads (bd) · git</span></h3>
-      <p>Close the issue, record durable insight, and complete the session protocol — work is not
-        done until it is pushed.</p>
-      <div class="cmds">
-        <span class="c">bd close &lt;id&gt;</span>
-        <span class="c">bd remember "insight worth keeping"</span>
-        <span class="c">git pull --rebase &amp;&amp; git push</span>
-      </div>
-    </div>
-
+  <!-- =================== IN YOUR PROJECT =================== -->
+  <h2>In your project</h2>
+  <div class="files">
+    <div class="file"><span class="k">AGENTS.md</span><span class="v">Principles and conventions, shared by every agent.</span></div>
+    <div class="file"><span class="k">CLAUDE.md</span><span class="v">Agent instructions plus issue-tracker rules.</span></div>
+    <div class="file"><span class="k">.beads/</span><span class="v">Your issue database, synced over git.</span></div>
+    <div class="file"><span class="k">.sandcastle/</span><span class="v">Sandbox config for running agents.</span></div>
+    <div class="file"><span class="k">.git/info/exclude</span><span class="v">Local-only ignores — never committed.</span></div>
   </div>
 
-  <!-- =================== PROJECT SETUP =================== -->
-  <h2>What lands in your project</h2>
-  <div class="grid">
-    <div class="card"><h3>AGENTS.md</h3><p>Principles template + the tokf convention. The shared instruction set for every agent.</p></div>
-    <div class="card"><h3>CLAUDE.md</h3><p><code>@AGENTS.md</code> plus beads integration and the mandatory session-completion protocol.</p></div>
-    <div class="card"><h3>.git/info/exclude</h3><p>Local-only ignores for <code>.claude/</code>, <code>.codex/</code>, <code>.opencode/</code>, <code>.sandcastle/</code>, <code>.beads/</code>, and config — never committed.</p></div>
-    <div class="card"><h3>.beads/</h3><p>Dolt-backed issue DB from <code>bd init --stealth</code>; syncs over your git remote.</p></div>
-    <div class="card"><h3>.sandcastle/</h3><p>Sandbox config + plan prompt, retargeted to <code>bd ready --exclude-type=epic</code>.</p></div>
-    <div class="card"><h3>package.json</h3><p>Ensured <code>"type": "module"</code> so ESM tooling runs cleanly.</p></div>
-  </div>
-
-  <!-- =================== BUNDLED SKILLS =================== -->
-  <h2>Bundled skills</h2>
-  <div class="grid">
-    <div class="card"><h3>/agentstack</h3><p>Interactive setup — coding principles (→ AGENTS.md), tokf filters (→ <code>.tokf/</code>), and sandcastle coding standards (→ <code>.sandcastle/CODING_STANDARDS.md</code>). Each mode runs standalone.</p></div>
-    <div class="card"><h3>/beads</h3><p>Workflow guide for beads repos: ready-work discovery, atomic claiming, dependency-aware follow-ups, and durable cross-session handoff.</p></div>
-  </div>
-
-  <!-- =================== PRINCIPLES =================== -->
-  <h2>Principles (the shared contract)</h2>
-  <p class="lead">Written into <code>AGENTS.md</code> and applied by every agent, on every task.</p>
-  <div class="grid">
-    <div class="card"><h3>SRP · OCP · LSP · ISP · DIP</h3><p>The SOLID core — one reason to change, open for extension, substitutable, lean interfaces, depend on abstractions.</p></div>
-    <div class="card"><h3>KISS · DRY</h3><p>Favor simplicity; keep every piece of knowledge in one authoritative place.</p></div>
-    <div class="card"><h3>Forward-First</h3><p>Design for the current and next contract version — no backward-compat shims.</p></div>
-    <div class="card"><h3>No Defensive Garbage</h3><p>Trust established preconditions; let violated invariants fail loudly.</p></div>
-    <div class="card"><h3>Tell, Don't Ask · Fail Fast</h3><p>Tell objects what to do; surface faults at the interface where they originate.</p></div>
-    <div class="card"><h3>No Silent Error Swallowing · Explicit Error Types</h3><p>Every error is observable; each failure mode is a named, typed value.</p></div>
-  </div>
-
-  <!-- =================== TRIAGE =================== -->
-  <h2>Triage vocabulary (used at the "claim work" step)</h2>
-  <table>
-    <tr><th>Kind</th><th>Roles</th></tr>
-    <tr><td><span class="pill">category</span></td>
-        <td><code>bug</code> (broken) · <code>enhancement</code> (new feature / improvement)</td></tr>
-    <tr><td><span class="pill">state</span></td>
-        <td><code>needs-triage</code> · <code>needs-info</code> · <code>ready-for-agent</code> ·
-            <code>ready-for-human</code> · <code>wontfix</code></td></tr>
-  </table>
-  <div class="note">
-    <code>ready-for-agent</code> means an issue is fully specified and AFK-ready — an agent (or a
-    sandcastle run) can pick it up with zero human context. That is the entry point this flow assumes.
-  </div>
+  <!-- =================== CTA =================== -->
+  <h2>Get started</h2>
+  <div class="cmd">npx github:madebymlai/agentstack</div>
+  <p class="works">Works with <b>Claude Code</b>, <b>Codex</b>, and <b>OpenCode</b>.</p>
 
   <footer>
-    Generated from the live agentstack configuration (<code>bin/install.mjs</code>, AGENTS.md, CLAUDE.md,
-    bundled skills). Open this file in any browser — it is fully self-contained.
+    Open this file in any browser — it is self-contained. Generated from the agentstack configuration.
   </footer>
 
 </div>

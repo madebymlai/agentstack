@@ -38,18 +38,18 @@ npx github:madebymlai/agentstack --project --rebuild --clean   # or -rc; full wi
 
 ## What it does
 
-Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
+Prompts you to pick the agents you use (Claude Code, Codex, OpenCode), then installs and configures each of these for them:
 
 | Tool | Description |
 |------|-------------|
-| [**tokf**](https://github.com/mpecan/tokf) | Token compression binary + global hooks for selected tools (Linux/MacOS only) |
-| [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge graph MCP server for all selected tools |
-| [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated agent skills, installed globally for selected tools via `npx skills@latest add` |
-| [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). Bundled `beads` skill installed globally for selected tools. `-p` also runs `bd init --server --non-interactive --quiet --stealth` to create the project's `.beads/` DB without writing `AGENTS.md`, `.claude/settings.json`, hooks, or a bootstrap commit (agentstack manages those itself); `.beads/` is added to `.git/info/exclude`. |
-| [**pi**](https://github.com/earendil-works/pi-mono) | `@earendil-works/pi-coding-agent` installed globally (`npm install -g`). Minimal coding agent (4 tools, ~1K-token system prompt) used as the default sandcastle executor. |
-| [**sandcastle**](https://github.com/mattpocock/sandcastle) | `@ai-hero/sandcastle` CLI installed globally (`npm install -g`) for sandboxed agent orchestration via Docker / Podman / Vercel. `-p` also runs `sandcastle init --agent pi --template parallel-planner-with-review` (interactive — pick backlog manager). `-p --rebuild` (`-r`) wipes `.sandcastle/` and re-inits, preserving your customized `CODING_STANDARDS.md` (or `--clean` / `-rc` to regenerate it too). |
-| [**AGENTS.md**](https://agents.md/) | Principles template + tokf section |
-| [**.git/info/exclude**](https://git-scm.com/docs/gitignore) | Local-only ignores (not committed) for .claude/, .codex/, .opencode/, .sandcastle/, CLAUDE.md, AGENTS.md, CONTEXT.md, .mcp.json |
+| [**tokf**](https://github.com/mpecan/tokf) | Compresses noisy command output to save tokens |
+| [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge-graph MCP server for navigating the codebase |
+| [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated, reusable agent skills |
+| [**beads**](https://github.com/gastownhall/beads) | Dependency-aware `bd` issue tracker |
+| [**pi**](https://github.com/earendil-works/pi-mono) | Minimal coding agent, the default sandcastle executor |
+| [**sandcastle**](https://github.com/mattpocock/sandcastle) | Sandboxed agent orchestration |
+| [**AGENTS.md**](https://agents.md/) | Shared principles and conventions for every agent |
+| [**.git/info/exclude**](https://git-scm.com/docs/gitignore) | Local-only ignores for agent config files |
 
 ## Built-in skills
 
