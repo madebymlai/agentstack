@@ -24,8 +24,8 @@ npx github:madebymlai/agentstack --project
 Re-run `sandcastle init` from scratch by wiping `.sandcastle/` first. Your customized `.sandcastle/CODING_STANDARDS.md` is preserved across the rebuild by default; add `--clean` for a full wipe that regenerates it from the template too:
 
 ```bash
-npx github:madebymlai/agentstack --project --rebuild           # or -r / -R; wipe .sandcastle/ and re-init, keeping CODING_STANDARDS.md
-npx github:madebymlai/agentstack --project --rebuild --clean   # or -Rc; full wipe, including CODING_STANDARDS.md
+npx github:madebymlai/agentstack --project --rebuild           # or -r; wipe .sandcastle/ and re-init, keeping CODING_STANDARDS.md
+npx github:madebymlai/agentstack --project --rebuild --clean   # or -rc; full wipe, including CODING_STANDARDS.md
 ```
 
 ## What it does
@@ -39,7 +39,7 @@ Prompts you to select which tools you use (Claude Code, Codex, OpenCode), then:
 | [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated agent skills, installed globally for selected tools via `npx skills@latest add` |
 | [**beads**](https://github.com/gastownhall/beads) | `bd` issue tracker binary (system-wide). Bundled `beads` skill installed globally for selected tools. `-p` also runs `bd init --server --non-interactive --quiet --stealth` to create the project's `.beads/` DB without writing `AGENTS.md`, `.claude/settings.json`, hooks, or a bootstrap commit (agentstack manages those itself); `.beads/` is added to `.git/info/exclude`. |
 | [**pi**](https://github.com/earendil-works/pi-mono) | `@earendil-works/pi-coding-agent` installed globally (`npm install -g`). Minimal coding agent (4 tools, ~1K-token system prompt) used as the default sandcastle executor. |
-| [**sandcastle**](https://github.com/mattpocock/sandcastle) | `@ai-hero/sandcastle` CLI installed globally (`npm install -g`) for sandboxed agent orchestration via Docker / Podman / Vercel. `-p` also runs `sandcastle init --agent pi --template parallel-planner-with-review` (interactive — pick backlog manager). `-p --rebuild` (`-r` / `-R`) wipes `.sandcastle/` and re-inits, preserving your customized `CODING_STANDARDS.md` (or `--clean` / `-Rc` to regenerate it too). |
+| [**sandcastle**](https://github.com/mattpocock/sandcastle) | `@ai-hero/sandcastle` CLI installed globally (`npm install -g`) for sandboxed agent orchestration via Docker / Podman / Vercel. `-p` also runs `sandcastle init --agent pi --template parallel-planner-with-review` (interactive — pick backlog manager). `-p --rebuild` (`-r`) wipes `.sandcastle/` and re-inits, preserving your customized `CODING_STANDARDS.md` (or `--clean` / `-rc` to regenerate it too). |
 | [**AGENTS.md**](https://agents.md/) | Principles template + tokf section |
 | [**.git/info/exclude**](https://git-scm.com/docs/gitignore) | Local-only ignores (not committed) for .claude/, .codex/, .opencode/, .sandcastle/, CLAUDE.md, AGENTS.md, CONTEXT.md, .mcp.json |
 

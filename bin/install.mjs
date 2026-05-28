@@ -1438,8 +1438,8 @@ export function setupProject() {
 async function main() {
   const args = process.argv.slice(2);
   const projectOnly = args.includes('--project') || args.includes('-p');
-  const rebuild = ['--rebuild', '-r', '-R', '-Rc'].some(f => args.includes(f));
-  const clean = args.includes('--clean') || args.includes('-Rc');
+  const rebuild = ['--rebuild', '-r', '-rc'].some(f => args.includes(f));
+  const clean = args.includes('--clean') || args.includes('-rc');
   const selectedByFlags = toolsFromFlags(args);
 
   if (projectOnly) {
