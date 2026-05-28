@@ -129,9 +129,8 @@
     stays inside the context window.</p>
   <p class="prose">When it is time to run code, <strong>sandcastle</strong> launches <strong>pi</strong>
     in a Docker, Podman, or Vercel sandbox and pulls the next ready issue straight from beads —
-    closing the loop where it started. Under all of it, <strong>AGENTS.md</strong> and
-    <strong>CLAUDE.md</strong> give every agent the same principles and rules, so the workflow is
-    identical whether you run Claude Code, Codex, or OpenCode.</p>
+    closing the loop where it started. Because the same tools and rules are wired into each agent, the
+    workflow is identical whether you run Claude Code, Codex, or OpenCode.</p>
 
   <!-- =================== SETUP =================== -->
   <h2>Setup, in three steps</h2>
@@ -147,8 +146,7 @@
       <div class="num">2</div>
       <div>
         <h3>agentstack sets everything up</h3>
-        <p>It installs the tools, registers the code-graph MCP server and tokf hooks, and writes your
-           <code>AGENTS.md</code> and <code>CLAUDE.md</code>.</p>
+        <p>It installs the tools and registers the code-graph MCP server and tokf hooks for each agent.</p>
       </div>
     </div>
     <div class="step">
