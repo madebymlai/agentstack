@@ -283,7 +283,7 @@ function getPiModels() {
   }
 }
 
-export async function setupSandcastleForProject() {
+export async function setupSandcastleForProject({ rebuild = false, clean = false } = {}) {
   if (!getInstalledVersion('pi')) {
     console.log('  pi: not installed, skipping sandcastle init (run `npx agentstack` first to install globally)');
     return;
@@ -294,7 +294,7 @@ export async function setupSandcastleForProject() {
   const scVer = getNpmLatestVersion('@ai-hero/sandcastle');
   console.log(`  sandcastle ${scVer || 'latest'} installed`);
 
-  if (existsSync('.sandcastle')) {
+  if (existsSync('.sandcastle') && !rebuild) {
     console.log('  sandcastle: .sandcastle/ already exists, skipping init');
   } else {
     const modelsByProvider = getPiModels();
@@ -317,14 +317,46 @@ export async function setupSandcastleForProject() {
 
     const selectedModel = await singleSelect('Which model?', models);
 
+    // Wipe only after interactive selection succeeds, so an aborted prompt leaves .sandcastle/ intact.
+    // CODING_STANDARDS.md is preserved across the rebuild (it's typically customized per project)
+    // unless --clean opts into a full wipe.
+    let standardsBackup = null;
+    if (rebuild && existsSync('.sandcastle')) {
+      if (!clean) standardsBackup = backupCodingStandards();
+      rmSync('.sandcastle', { recursive: true, force: true });
+      console.log(`  sandcastle: removed .sandcastle/ for rebuild${clean ? ' (clean: regenerating CODING_STANDARDS.md)' : ''}`);
+    }
+
     const initCmd = `npx @ai-hero/sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox podman`;
     console.log(`  ${initCmd}`);
     execSync(initCmd, { stdio: 'inherit' });
 
     rewriteSandcastleMain();
+
+    if (standardsBackup) restoreCodingStandards(standardsBackup);
   }
 
   rewriteSandcastlePlanPrompt();
+}
+
+const CODING_STANDARDS_FILE = 'CODING_STANDARDS.md';
+
+function backupCodingStandards() {
+  const src = resolve('.sandcastle', CODING_STANDARDS_FILE);
+  if (!existsSync(src)) {
+    console.log(`  sandcastle: no ${CODING_STANDARDS_FILE} to preserve`);
+    return null;
+  }
+  const backupPath = resolve(mkdtempSync(resolve(tmpdir(), 'agentstack-standards-')), CODING_STANDARDS_FILE);
+  copyFileSync(src, backupPath);
+  console.log(`  sandcastle: preserved ${CODING_STANDARDS_FILE} → ${backupPath}`);
+  return backupPath;
+}
+
+function restoreCodingStandards(backupPath) {
+  copyFileSync(backupPath, resolve('.sandcastle', CODING_STANDARDS_FILE));
+  rmSync(dirname(backupPath), { recursive: true, force: true });
+  console.log(`  sandcastle: restored preserved ${CODING_STANDARDS_FILE} after init`);
 }
 
 function rewriteSandcastleMain() {
@@ -1406,6 +1438,8 @@ export function setupProject() {
 async function main() {
   const args = process.argv.slice(2);
   const projectOnly = args.includes('--project') || args.includes('-p');
+  const rebuild = ['--rebuild', '-r', '-R', '-Rc'].some(f => args.includes(f));
+  const clean = args.includes('--clean') || args.includes('-Rc');
   const selectedByFlags = toolsFromFlags(args);
 
   if (projectOnly) {
@@ -1414,9 +1448,12 @@ async function main() {
       console.log('Not a git repository. Run from a git repo root.');
       process.exit(1);
     }
+    if (clean && !rebuild) {
+      console.log('  Note: --clean has no effect without --rebuild');
+    }
     setupProject();
     setupBeadsForProject();
-    await setupSandcastleForProject();
+    await setupSandcastleForProject({ rebuild, clean });
     console.log('\nDone.');
     return;
   }
