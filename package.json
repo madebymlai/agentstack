@@ -6,6 +6,10 @@
   "bin": {
     "agentstack": "./bin/install.mjs"
   },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "check": "node --check bin/install.mjs"
+  },
   "files": [
     "bin/",
     "skills/"
