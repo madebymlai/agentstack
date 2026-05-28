@@ -1,7 +1,3 @@
-# agentstack
-
-Setup tool for AI coding agents. Installs and configures tools across Claude Code, Codex, and OpenCode.
-
 <p align="center">
   <a href="docs/agent-stack-flow.html">
     <img src="docs/assets/agent-stack.png" alt="agentstack — one install, three agents, one workflow" width="830">
