@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>agentstack — set up every coding agent with one command</title>
+<title>agentstack — set up your coding agents with one command</title>
 <style>
   :root{
     --bg:#0b0d10; --panel:#13161b; --panel2:#181c22; --border:#262b33;
@@ -31,14 +31,9 @@
   .cmd::before{content:"$"; color:var(--accent2); font-weight:700}
   .cmd .muted{color:#5f6b78}
 
-  /* what you get */
-  .tools{display:grid; grid-template-columns:1fr 1fr; gap:0; margin:0;
-         border:1px solid var(--border)}
-  .tool{padding:20px 22px; border-right:1px solid var(--border); border-bottom:1px solid var(--border)}
-  .tool:nth-child(2n){border-right:none}
-  .tool:nth-last-child(-n+2){border-bottom:none}
-  .tool .n{font-family:var(--mono); font-size:14.5px; font-weight:700; color:var(--accent2)}
-  .tool .r{color:var(--muted); font-size:14px; margin-top:5px}
+  /* prose */
+  .prose{color:#c2ccd6; font-size:16px; line-height:1.75; max-width:680px; margin:0 0 18px}
+  .prose strong{color:var(--accent2); font-weight:600}
 
   /* how it works */
   .steps{display:grid; gap:0; border:1px solid var(--border)}
@@ -69,7 +64,6 @@
   }
   .hs-brand{display:flex; align-items:center; gap:11px; padding-bottom:22px;
             border-bottom:1px solid var(--border)}
-  .hs-mark{width:22px; height:22px; background:var(--accent)}
   .hs-brand .name{font-family:var(--mono); font-weight:700; font-size:18px; letter-spacing:-.2px}
   .hs-brand .kicker{margin-left:auto; font-family:var(--mono); font-size:11.5px;
             text-transform:uppercase; letter-spacing:.12em; color:var(--muted)}
@@ -98,15 +92,14 @@
 <div class="wrap">
 
   <!-- =================== SQUARE HERO (830×830, README width) =================== -->
-  <section id="hero-square" aria-label="agentstack — set up every coding agent with one command">
+  <section id="hero-square" aria-label="agentstack — set up your coding agents with one command">
     <div class="hs-brand">
-      <span class="hs-mark"></span>
       <span class="name">agentstack</span>
       <span class="kicker">AI coding agent setup</span>
     </div>
 
     <div class="hs-head">
-      <h1>Set up every coding agent with <span class="ac">one command.</span></h1>
+      <h1>Set up your coding agents with <span class="ac">one command.</span></h1>
       <p>The same tools and workflow across <b>Claude Code</b>, <b>Codex</b>, and
          <b>OpenCode</b> — no per-agent setup.</p>
     </div>
@@ -126,21 +119,22 @@
     </div>
   </section>
 
-  <!-- =================== WHAT YOU GET =================== -->
-  <h2>What you get</h2>
-  <p style="color:var(--muted); max-width:640px; margin:0 0 20px">
-    Six tools, installed and wired into every agent you pick.</p>
-  <div class="tools">
-    <div class="tool"><div class="n">tokf</div><div class="r">Compresses command output so more fits in context.</div></div>
-    <div class="tool"><div class="n">codebase-memory</div><div class="r">A code knowledge graph your agent queries instead of grepping.</div></div>
-    <div class="tool"><div class="n">mattpocock/skills</div><div class="r">Curated, reusable agent workflows.</div></div>
-    <div class="tool"><div class="n">beads</div><div class="r">An issue tracker that understands dependencies.</div></div>
-    <div class="tool"><div class="n">pi</div><div class="r">A small, fast coding agent — sandcastle's default executor.</div></div>
-    <div class="tool"><div class="n">sandcastle</div><div class="r">Runs agents in a Docker, Podman, or Vercel sandbox.</div></div>
-  </div>
+  <!-- =================== HOW THE TOOLS WORK TOGETHER =================== -->
+  <h2>How the tools work together</h2>
+  <p class="prose">The six tools aren't separate installs — they feed each other.
+    <strong>beads</strong> holds the work: every ready issue, its dependencies, and what to pick up
+    next. An agent claims one, then <strong>codebase-memory</strong> hands it a queryable graph of the
+    code to plan against, and <strong>mattpocock/skills</strong> gives it a proven workflow to follow.
+    <strong>tokf</strong> compresses the command output it reads back along the way, so a long session
+    stays inside the context window.</p>
+  <p class="prose">When it is time to run code, <strong>sandcastle</strong> launches <strong>pi</strong>
+    in a Docker, Podman, or Vercel sandbox and pulls the next ready issue straight from beads —
+    closing the loop where it started. Under all of it, <strong>AGENTS.md</strong> and
+    <strong>CLAUDE.md</strong> give every agent the same principles and rules, so the workflow is
+    identical whether you run Claude Code, Codex, or OpenCode.</p>
 
-  <!-- =================== HOW IT WORKS =================== -->
-  <h2>How it works</h2>
+  <!-- =================== SETUP =================== -->
+  <h2>Setup, in three steps</h2>
   <div class="steps">
     <div class="step">
       <div class="num">1</div>
