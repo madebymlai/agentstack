@@ -20,7 +20,7 @@
   - Use `bd ready`, `bd show <id>`, `bd update <id> --claim`, and `bd close <id>`.
   - Use `bd remember "insight"` for persistent project memory; do not create MEMORY.md files.
   - Do not use markdown TODO lists for task tracking
-  - See `docs/agents/issue-tracker.md`.
+  - When using the `/to-prd` skill, create the PRD issue with `--type=epic` — it is the parent that groups the child issues later split out by `/to-issues`.
 
 ## Triage labels
 
