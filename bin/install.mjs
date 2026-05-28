@@ -15,6 +15,7 @@ import {
   setupSandcastleForProject,
 } from './tool-installers.mjs';
 import { setupProject } from './project-setup.mjs';
+import { installCliCommands } from './cli.mjs';
 import {
   TOOL_OPTIONS,
   toolsFromFlags,
@@ -86,6 +87,9 @@ async function main() {
   // pi (pi-coding-agent) — cheap executor for sandcastle tasks
   installPi();
   disablePiSkills();
+
+  // afk and friends — bare shell commands served onto PATH
+  installCliCommands();
 
   ensureBypassPermissions(tools);
 

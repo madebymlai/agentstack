@@ -4,11 +4,12 @@
   "description": "npx installer for dev tools",
   "type": "module",
   "bin": {
-    "agentstack": "./bin/install.mjs"
+    "agentstack": "./bin/install.mjs",
+    "afk": "./bin/afk.mjs"
   },
   "scripts": {
     "test": "node --test \"test/**/*.test.mjs\"",
-    "check": "node --check bin/install.mjs"
+    "check": "node --check bin/install.mjs && node --check bin/afk.mjs && node --check bin/cli.mjs"
   },
   "files": [
     "bin/",
@@ -23,6 +24,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@ai-hero/sandcastle": "^0.6.4"
+    "@ai-hero/sandcastle": "^0.6.5"
   }
 }
