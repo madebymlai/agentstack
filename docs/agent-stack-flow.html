@@ -83,11 +83,17 @@
   .hs-head p b{color:var(--text); font-weight:600}
   .hs-prose{color:#c2ccd6; font-size:17px; line-height:1.75; margin:36px 0 0; max-width:690px}
   .hs-prose strong{color:var(--accent2); font-weight:600}
-  .hs-cta{margin-top:auto}
-  .hs-cmd{font-family:var(--mono); font-size:15px; background:#070809;
-          border:1px solid var(--border); padding:16px 18px; color:#dfe9ff;
-          display:flex; align-items:center; gap:10px}
-  .hs-cmd::before{content:"$"; color:var(--accent2); font-weight:700}
+  /* hero workflow graph — flat, square */
+  .wf{margin-top:auto; padding-top:8px}
+  .wf-rail{display:flex; align-items:stretch}
+  .wf-node{flex:1; border:1px solid var(--border); background:#0f1318; padding:16px 12px; text-align:center}
+  .wf-node .t{font-size:15px; font-weight:700; color:var(--text)}
+  .wf-node .tool{font-family:var(--mono); font-size:11.5px; color:var(--accent2); margin-top:6px}
+  .wf-arr{flex:0 0 30px; display:flex; align-items:center; justify-content:center;
+          color:var(--accent); font-size:15px}
+  .wf-loop{display:flex; align-items:center; gap:12px; margin-top:14px;
+           color:var(--accent); font-family:var(--mono); font-size:11.5px}
+  .wf-loop .line{flex:1; height:1px; background:var(--border)}
 </style>
 </head>
 <body>
@@ -113,8 +119,17 @@
       <strong>sandcastle</strong> drops a <strong>pi</strong> agent into a sandbox and pulls the next
       issue from beads, closing the loop.</p>
 
-    <div class="hs-cta">
-      <div class="hs-cmd">npx github:madebymlai/agentstack</div>
+    <div class="wf">
+      <div class="wf-rail">
+        <div class="wf-node"><div class="t">Plan</div><div class="tool">beads</div></div>
+        <div class="wf-arr">&rarr;</div>
+        <div class="wf-node"><div class="t">Understand</div><div class="tool">codebase-memory</div></div>
+        <div class="wf-arr">&rarr;</div>
+        <div class="wf-node"><div class="t">Build</div><div class="tool">skills · tokf</div></div>
+        <div class="wf-arr">&rarr;</div>
+        <div class="wf-node"><div class="t">Run</div><div class="tool">sandcastle · pi</div></div>
+      </div>
+      <div class="wf-loop"><span class="line"></span><span>&#8635; repeats with the next ready issue</span><span class="line"></span></div>
     </div>
   </section>
 

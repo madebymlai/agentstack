@@ -1,6 +1,6 @@
 <p align="center">
   <a href="docs/agent-stack-flow.html">
-    <img src="docs/assets/agent-stack.png?v=2" alt="agentstack — set up your coding agents with one command" width="830">
+    <img src="docs/assets/agent-stack.png?v=3" alt="agentstack — set up your coding agents with one command" width="830">
   </a>
 </p>
 
