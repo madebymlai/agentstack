@@ -960,146 +960,6 @@ export function writeEnvVars(keys) {
   }
 }
 
-// BEGIN agentstack codex multi-agent usage hint
-const CODEX_MULTI_AGENT_USAGE_HINT_BEGIN = '# >>> agentstack codex multi-agent usage hint';
-const CODEX_MULTI_AGENT_USAGE_HINT_END = '# <<< agentstack codex multi-agent usage hint';
-const CODEX_MULTI_AGENT_USAGE_HINT_SECTION = '[features.multi_agent_v2]';
-const CODEX_MULTI_AGENT_USAGE_HINT_KEYS = ['usage_hint_enabled', 'usage_hint_text'];
-const CODEX_MULTI_AGENT_USAGE_HINT_SETTINGS = `usage_hint_enabled = true
-usage_hint_text = '''
-Use \`spawn_agent\` autonomously when delegation materially improves the task.
-
-For non-implementation coding tasks, call \`spawn_agent\` with the mini model.
-
-Repository or workspace instructions such as AGENTS.md or skills may define when and how delegation is appropriate. Treat those instructions as the user's standing delegation policy for the workspace. Do not require a separate live user request before spawning subagents.
-'''`;
-
-function codexMultiAgentUsageHintBlock({ includeSection = true } = {}) {
-  return [
-    CODEX_MULTI_AGENT_USAGE_HINT_BEGIN,
-    ...(includeSection ? [CODEX_MULTI_AGENT_USAGE_HINT_SECTION] : []),
-    CODEX_MULTI_AGENT_USAGE_HINT_SETTINGS,
-    CODEX_MULTI_AGENT_USAGE_HINT_END,
-  ].join('\n') + '\n';
-}
-
-function removeBoundedTomlBlock(content, begin, end) {
-  let nextContent = content;
-  while (true) {
-    const beginIndex = nextContent.indexOf(begin);
-    if (beginIndex === -1) return nextContent;
-
-    const endIndex = nextContent.indexOf(end, beginIndex);
-    if (endIndex === -1) return nextContent;
-
-    const afterEndLine = nextContent.indexOf('\n', endIndex);
-    const removeEnd = afterEndLine === -1 ? nextContent.length : afterEndLine + 1;
-    nextContent = nextContent.slice(0, beginIndex) + nextContent.slice(removeEnd);
-  }
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function tomlSectionLinePattern(section) {
-  return new RegExp(`^\\s*${escapeRegExp(section)}\\s*(?:#.*)?$`);
-}
-
-function isTomlSectionLine(line) {
-  return /^\s*\[[^\]]+\]\s*(?:#.*)?$/.test(line);
-}
-
-function hasTomlSection(content, section) {
-  const sectionPattern = tomlSectionLinePattern(section);
-  return content.split('\n').some(line => sectionPattern.test(line));
-}
-
-function startsUnclosedMultilineTomlString(value, delimiter) {
-  return value.startsWith(delimiter) && !value.slice(delimiter.length).includes(delimiter);
-}
-
-function removeTomlKeysFromSection(content, section, keys) {
-  const sectionPattern = tomlSectionLinePattern(section);
-  const keyPattern = new RegExp(`^\\s*(${keys.map(escapeRegExp).join('|')})\\s*=`);
-  const lines = content.split('\n');
-  const nextLines = [];
-  let inTargetSection = false;
-  let skipUntilDelimiter = null;
-
-  for (const line of lines) {
-    if (skipUntilDelimiter) {
-      if (line.includes(skipUntilDelimiter)) {
-        skipUntilDelimiter = null;
-      }
-      continue;
-    }
-
-    if (isTomlSectionLine(line)) {
-      inTargetSection = sectionPattern.test(line);
-    }
-
-    if (inTargetSection && keyPattern.test(line)) {
-      const value = line.slice(line.indexOf('=') + 1).trim();
-      if (startsUnclosedMultilineTomlString(value, "'''")) {
-        skipUntilDelimiter = "'''";
-      } else if (startsUnclosedMultilineTomlString(value, '"""')) {
-        skipUntilDelimiter = '"""';
-      }
-      continue;
-    }
-
-    nextLines.push(line);
-  }
-
-  return nextLines.join('\n');
-}
-
-function insertTomlBlockIntoSection(content, section, block) {
-  const sectionPattern = tomlSectionLinePattern(section);
-  const lines = content.split('\n');
-  const sectionIndex = lines.findIndex(line => sectionPattern.test(line));
-  if (sectionIndex === -1) return content;
-
-  lines.splice(sectionIndex + 1, 0, ...block.trimEnd().split('\n'));
-  return lines.join('\n');
-}
-
-function appendTomlBlock(content, block) {
-  if (content === '') return block;
-  const separator = content.endsWith('\n\n')
-    ? ''
-    : content.endsWith('\n') ? '\n' : '\n\n';
-  return content + separator + block;
-}
-
-export function ensureCodexMultiAgentUsageHint(content) {
-  const withoutManagedBlock = removeBoundedTomlBlock(
-    content,
-    CODEX_MULTI_AGENT_USAGE_HINT_BEGIN,
-    CODEX_MULTI_AGENT_USAGE_HINT_END,
-  );
-  const withoutExistingHintKeys = removeTomlKeysFromSection(
-    withoutManagedBlock,
-    CODEX_MULTI_AGENT_USAGE_HINT_SECTION,
-    CODEX_MULTI_AGENT_USAGE_HINT_KEYS,
-  );
-
-  if (hasTomlSection(withoutExistingHintKeys, CODEX_MULTI_AGENT_USAGE_HINT_SECTION)) {
-    return insertTomlBlockIntoSection(
-      withoutExistingHintKeys,
-      CODEX_MULTI_AGENT_USAGE_HINT_SECTION,
-      codexMultiAgentUsageHintBlock({ includeSection: false }),
-    );
-  }
-
-  return appendTomlBlock(
-    withoutExistingHintKeys,
-    codexMultiAgentUsageHintBlock({ includeSection: true }),
-  );
-}
-// END agentstack codex multi-agent usage hint
-
 /**
  * @unused Reserved API-key collection + MCP config pattern for future installer steps.
  */
@@ -1159,20 +1019,11 @@ export function ensureBypassPermissions(tools) {
         if (!content.includes('sandbox_mode')) {
           settings.push('sandbox_mode = "danger-full-access"');
         }
-        let nextContent = settings.length
-          ? settings.join('\n') + '\n' + content
-          : content;
-        // BEGIN agentstack codex multi-agent usage hint
-        const withUsageHint = ensureCodexMultiAgentUsageHint(nextContent);
-        if (withUsageHint !== nextContent) {
-          settings.push('features.multi_agent_v2 usage hint');
-          nextContent = withUsageHint;
-        }
-        // END agentstack codex multi-agent usage hint
         if (!settings.length) {
           console.log(`  codex: already set`);
           break;
         }
+        const nextContent = settings.join('\n') + '\n' + content;
         mkdirSync(dirname(configPath), { recursive: true });
         writeFileSync(configPath, nextContent);
         console.log(`  codex: ${settings.join(', ')} in ${configPath}`);
