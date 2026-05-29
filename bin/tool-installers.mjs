@@ -141,10 +141,14 @@ export async function setupSandcastleForProject({ rebuild = false, clean = false
 
     const initCmd = `npx @ai-hero/sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox podman`;
     console.log(`  ${initCmd}`);
+    // init prompts "Build the default Podman image now?" — answer No: it would build the
+    // unpatched Containerfile, and we rebuild from the patched one below anyway.
+    console.log('  >>> When asked "Build the default Podman image now?", answer No — agentstack rebuilds it after patching.');
     execSync(initCmd, { stdio: 'inherit' });
 
     rewriteSandcastleMain();
     rewriteSandcastleContainerfile();
+    buildSandcastleImage();
 
     if (standardsBackup) restoreCodingStandards(standardsBackup);
   }
@@ -152,6 +156,22 @@ export async function setupSandcastleForProject({ rebuild = false, clean = false
   rewriteSandcastlePlanPrompt();
   rewriteSandcastleImplementPrompt();
   rewriteSandcastleMergePrompt();
+}
+
+// Build the podman image AFTER the Containerfile is patched (mise + caches). sandcastle
+// only builds during `init` (from the unpatched template) and never rebuilds when the
+// Containerfile changes, so without this the sandbox runs against a stale image and the
+// `mise install` hook dies at runtime with "mise: not found". Failure here is non-fatal:
+// .sandcastle/ is already set up, so we warn and let the user build manually.
+function buildSandcastleImage() {
+  const cmd = 'npx @ai-hero/sandcastle podman build-image';
+  console.log(`  ${cmd}  (rebuilding image from patched Containerfile)`);
+  try {
+    execSync(cmd, { stdio: 'inherit' });
+    console.log('  sandcastle: podman image rebuilt to match the patched Containerfile');
+  } catch (err) {
+    console.log(`  sandcastle: image build failed — run \`${cmd}\` manually once podman is ready (${err.message})`);
+  }
 }
 
 const CODING_STANDARDS_FILE = 'CODING_STANDARDS.md';
