@@ -141,9 +141,9 @@ export async function setupSandcastleForProject({ rebuild = false, clean = false
 
     const initCmd = `npx @ai-hero/sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox podman`;
     console.log(`  ${initCmd}`);
-    // init prompts "Build the default Podman image now?" — answer No: it would build the
-    // unpatched Containerfile, and we rebuild from the patched one below anyway.
-    console.log('  >>> When asked "Build the default Podman image now?", answer No — agentstack rebuilds it after patching.');
+    // init offers to build the image from the unpatched Containerfile; decline it, since
+    // we rebuild from the patched one below.
+    console.log("  Decline init's build prompt — the image is rebuilt after patching.");
     execSync(initCmd, { stdio: 'inherit' });
 
     rewriteSandcastleMain();
