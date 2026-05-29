@@ -251,6 +251,9 @@ function rewriteSandcastleContainerfile() {
     'ENV PATH="/home/agent/.local/share/mise/shims:$PATH"',
     '# Auto-trust the bind-mounted worktree so mise loads its mise.toml without prompting.',
     'ENV MISE_TRUSTED_CONFIG_PATHS="/home/agent/workspace"',
+    '# Keep state inside the agent-owned mise dir: the cache mount\'s parent dirs are',
+    "# created as root, so the default ~/.local/state isn't writable by the agent user.",
+    'ENV MISE_STATE_DIR="/home/agent/.local/share/mise/state"',
   ].join('\n');
 
   const patched = content.replace(sysDeps, `${sysDeps}\n${miseBlock}`);
