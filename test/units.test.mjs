@@ -17,6 +17,45 @@ import { postInstallCommands, verifySha256Checksum } from '../bin/binary-install
 import { copyDirMerge } from '../bin/fs-util.mjs';
 import { resolveSandcastleMain, buildAfkCommand } from '../bin/afk.mjs';
 import { renderLauncher, installCliCommands } from '../bin/cli.mjs';
+import {
+  detectWorktreeCopyDirs,
+  detectMiseVersionFiles,
+  detectDepInstallCommands,
+  patchContainerfileForMise,
+  patchMainForMise,
+} from '../bin/sandcastle-setup.mjs';
+
+// A vanilla sandcastle-generated main.ts, trimmed to the anchors the mise patch rewrites.
+const VANILLA_MAIN = [
+  'import { z } from "zod";',
+  '',
+  'const copyToWorktree = ["node_modules"];',
+  '',
+  'const hooks = {',
+  '  sandbox: {',
+  '    onSandboxReady: [{ command: "npm install" }],',
+  '  },',
+  '};',
+  '',
+  'const plan = await sandcastle.run({ hooks, sandbox: podman(), name: "planner" });',
+  '',
+].join('\n');
+
+// A vanilla sandcastle-generated Containerfile, trimmed to the system-deps block the
+// mise patch anchors on.
+const VANILLA_CONTAINERFILE = [
+  'FROM node:22-bookworm',
+  '',
+  '# Install system dependencies',
+  'RUN apt-get update && apt-get install -y \\',
+  '  git \\',
+  '  curl \\',
+  '  jq \\',
+  '  && rm -rf /var/lib/apt/lists/*',
+  '',
+  'RUN corepack enable',
+  '',
+].join('\n');
 
 function withTempDir(fn) {
   const dir = mkdtempSync(resolve(tmpdir(), 'agentstack-test-'));
@@ -250,6 +289,140 @@ test('buildAfkCommand: wraps npx tsx and forwards passthrough args', () => {
   assert.deepEqual(buildAfkCommand('.sandcastle/main.ts', ['--foo', 'bar']), {
     command: 'npx',
     args: ['tsx', '.sandcastle/main.ts', '--foo', 'bar'],
+  });
+});
+
+// ---- sandcastle-setup.mjs ----
+
+test('detectWorktreeCopyDirs: Node project copies node_modules + .beads', () => {
+  withTempDir((dir) => {
+    writeFileSync(resolve(dir, 'package.json'), '{}');
+    assert.deepEqual(detectWorktreeCopyDirs(dir), ['node_modules', '.beads']);
+  });
+});
+
+test('detectWorktreeCopyDirs: Python project copies .venv, not node_modules', () => {
+  withTempDir((dir) => {
+    writeFileSync(resolve(dir, 'pyproject.toml'), '');
+    assert.deepEqual(detectWorktreeCopyDirs(dir), ['.venv', '.beads']);
+  });
+});
+
+test('detectWorktreeCopyDirs: polyglot project copies every detected language dir', () => {
+  withTempDir((dir) => {
+    writeFileSync(resolve(dir, 'package.json'), '{}');
+    writeFileSync(resolve(dir, 'requirements.txt'), '');
+    writeFileSync(resolve(dir, 'Cargo.toml'), '');
+    assert.deepEqual(detectWorktreeCopyDirs(dir), ['node_modules', '.venv', 'target', '.beads']);
+  });
+});
+
+test('patchContainerfileForMise: installs mise after the system-deps block', () => {
+  const out = patchContainerfileForMise(VANILLA_CONTAINERFILE, []);
+  assert.match(out, /curl https:\/\/mise\.run \| MISE_INSTALL_PATH=\/usr\/local\/bin\/mise sh/);
+  assert.match(out, /ENV MISE_DATA_DIR="\/usr\/local\/share\/mise"/);
+  assert.match(out, /ENV PATH="\/usr\/local\/share\/mise\/shims:\$PATH"/);
+});
+
+test('patchContainerfileForMise: bakes detected version files into image layers at build time', () => {
+  const out = patchContainerfileForMise(VANILLA_CONTAINERFILE, ['mise.toml', '.tool-versions']);
+  assert.match(out, /COPY mise\.toml \.tool-versions \/opt\/mise-bake\//);
+  assert.match(out, /mise install -C \/opt\/mise-bake/);
+});
+
+test('detectDepInstallCommands: picks the right install per language', () => {
+  withTempDir((dir) => {
+    writeFileSync(resolve(dir, 'package.json'), '{}');
+    writeFileSync(resolve(dir, 'Cargo.toml'), '');
+    assert.deepEqual(detectDepInstallCommands(dir), ['npm install', 'cargo fetch']);
+  });
+});
+
+test('detectDepInstallCommands: prefers a lockfile over a looser manifest within a language', () => {
+  withTempDir((dir) => {
+    writeFileSync(resolve(dir, 'uv.lock'), '');
+    writeFileSync(resolve(dir, 'requirements.txt'), '');
+    writeFileSync(resolve(dir, 'pyproject.toml'), '');
+    // One Python command, and it's uv sync (the lockfile), not pip.
+    assert.deepEqual(detectDepInstallCommands(dir), ['uv sync']);
+  });
+});
+
+test('detectDepInstallCommands: empty when no recognized manifest', () => {
+  withTempDir((dir) => {
+    assert.deepEqual(detectDepInstallCommands(dir), []);
+  });
+});
+
+test('patchMainForMise: mounts ~/.pi/agent and a pkg cache, but NOT an unbounded toolchain dir', () => {
+  const out = patchMainForMise(VANILLA_MAIN, ['node_modules', '.beads']);
+  assert.match(out, /hostPath: "~\/\.pi\/agent"/);
+  assert.match(out, /hostPath: "~\/\.cache\/sandcastle-pkgs", sandboxPath: "\/home\/agent\/\.cache"/);
+  // The old design mounted the mise toolchain dir at runtime — the source of unbounded growth.
+  assert.doesNotMatch(out, /\/home\/agent\/\.local\/share\/mise/);
+});
+
+test('patchMainForMise: onSandboxReady reconciles toolchain, prunes, then runs each language install', () => {
+  const out = patchMainForMise(VANILLA_MAIN, ['.venv', 'target', '.beads'], ['uv sync', 'cargo fetch']);
+  // mise install reconciles any pin the baked image missed; prune bounds the runtime cache;
+  // then the project's own language installs run (not a hardcoded npm install).
+  const ready = out.match(/onSandboxReady: \[(.*?)\]/s)[1];
+  assert.match(ready, /command: "mise install"/);
+  assert.match(ready, /prune/);
+  assert.match(ready, /command: "uv sync"/);
+  assert.match(ready, /command: "cargo fetch"/);
+  assert.ok(ready.indexOf('mise install') < ready.indexOf('uv sync'), 'mise install runs before deps');
+});
+
+test('patchMainForMise: sets copyToWorktree to the given dirs', () => {
+  const out = patchMainForMise(VANILLA_MAIN, ['target', '.beads']);
+  assert.match(out, /const copyToWorktree = \["target", "\.beads"\];/);
+});
+
+test('detectMiseVersionFiles: returns only the version manifests that exist', () => {
+  withTempDir((dir) => {
+    writeFileSync(resolve(dir, '.tool-versions'), '');
+    writeFileSync(resolve(dir, '.nvmrc'), '20');
+    assert.deepEqual(detectMiseVersionFiles(dir), ['.tool-versions', '.nvmrc']);
+  });
+});
+
+test('detectMiseVersionFiles: empty when the project pins nothing', () => {
+  withTempDir((dir) => {
+    assert.deepEqual(detectMiseVersionFiles(dir), []);
+  });
+});
+
+test('patchContainerfileForMise: redirects every package manager cache into one dir', () => {
+  const out = patchContainerfileForMise(VANILLA_CONTAINERFILE, []);
+  assert.match(out, /ENV CARGO_HOME="\/home\/agent\/\.cache\/cargo"/);
+  assert.match(out, /ENV NPM_CONFIG_CACHE="\/home\/agent\/\.cache\/npm"/);
+  assert.match(out, /ENV GRADLE_USER_HOME="\/home\/agent\/\.cache\/gradle"/);
+  assert.match(out, /ENV GOMODCACHE="\/home\/agent\/\.cache\/go\/mod"/);
+});
+
+test('patchContainerfileForMise: is idempotent', () => {
+  const once = patchContainerfileForMise(VANILLA_CONTAINERFILE, ['mise.toml']);
+  const twice = patchContainerfileForMise(once, ['mise.toml']);
+  assert.equal(twice, once);
+});
+
+test('patchContainerfileForMise: no version files means no build-time bake step', () => {
+  const out = patchContainerfileForMise(VANILLA_CONTAINERFILE, []);
+  assert.doesNotMatch(out, /mise install/);
+  assert.doesNotMatch(out, /^COPY /m);
+});
+
+test('detectWorktreeCopyDirs: Flutter/Dart project copies .dart_tool', () => {
+  withTempDir((dir) => {
+    writeFileSync(resolve(dir, 'pubspec.yaml'), '');
+    assert.deepEqual(detectWorktreeCopyDirs(dir), ['.dart_tool', '.beads']);
+  });
+});
+
+test('detectWorktreeCopyDirs: no markers still copies .beads', () => {
+  withTempDir((dir) => {
+    assert.deepEqual(detectWorktreeCopyDirs(dir), ['.beads']);
   });
 });
 
