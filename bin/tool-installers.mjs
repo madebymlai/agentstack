@@ -143,7 +143,7 @@ export async function setupSandcastleForProject({ rebuild = false, clean = false
     console.log(`  ${initCmd}`);
     // init offers to build the image from the unpatched Containerfile; decline it, since
     // we rebuild from the patched one below.
-    console.log("  Decline init's build prompt — the image is rebuilt after patching.");
+    console.log("  Decline init's build prompt; the image is rebuilt after patching.");
     execSync(initCmd, { stdio: 'inherit' });
 
     rewriteSandcastleMain();
