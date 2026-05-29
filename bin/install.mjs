@@ -12,8 +12,8 @@ import {
   setupBeadsForProject,
   installPi,
   disablePiSkills,
-  setupSandcastleForProject,
 } from './tool-installers.mjs';
+import { setupSandcastleForProject } from './sandcastle-setup.mjs';
 import { setupProject } from './project-setup.mjs';
 import { installCliCommands } from './cli.mjs';
 import {
