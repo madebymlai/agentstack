@@ -182,9 +182,12 @@ function rewriteSandcastleMain() {
 
   const original = content;
 
+  // Mounts: ~/.pi/agent for agent auth/config, and a host-side mise cache so each
+  // sandbox reuses already-downloaded toolchains instead of re-downloading them
+  // (a cold `mise install` is tens of seconds per toolchain; warm is ~instant).
   content = content.replaceAll(
     'podman()',
-    'podman({ mounts: [{ hostPath: "~/.pi/agent", sandboxPath: "~/.pi/agent" }] })',
+    'podman({ mounts: [{ hostPath: "~/.pi/agent", sandboxPath: "~/.pi/agent" }, { hostPath: "~/.cache/sandcastle-mise", sandboxPath: "/home/agent/.local/share/mise" }] })',
   );
 
   // Copy .beads/ into each worktree alongside node_modules. Stealth mode
@@ -210,7 +213,7 @@ function rewriteSandcastleMain() {
   }
 
   writeFileSync(mainPath, content);
-  console.log('  sandcastle: rewrote main.ts → ~/.pi/agent mount, .beads in copyToWorktree, mise install hook');
+  console.log('  sandcastle: rewrote main.ts → ~/.pi/agent + mise-cache mounts, .beads in copyToWorktree, mise install hook');
 }
 
 // Add mise (jdx) to the generated Containerfile so the sandbox is agnostic to the
