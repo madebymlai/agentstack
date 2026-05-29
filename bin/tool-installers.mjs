@@ -186,13 +186,22 @@ function rewriteSandcastleMain() {
     'podman({ mounts: [{ hostPath: "~/.pi/agent", sandboxPath: "~/.pi/agent" }] })',
   );
 
+  // Copy .beads/ into each worktree alongside node_modules. Stealth mode
+  // git-excludes .beads, so the worktree checkout omits it; copying the whole
+  // directory (cp -R won't create parent dirs) brings the Dolt DB along, so the
+  // sandbox needs no separate import or cleanup step.
+  content = content.replace(
+    'const copyToWorktree = ["node_modules"];',
+    'const copyToWorktree = ["node_modules", ".beads"];',
+  );
+
   if (content === original) {
-    console.log('  sandcastle: main.ts did not match expected podman() pattern, skipping rewrite');
+    console.log('  sandcastle: main.ts did not match expected patterns, skipping rewrite');
     return;
   }
 
   writeFileSync(mainPath, content);
-  console.log('  sandcastle: rewrote main.ts → podman with ~/.pi/agent mount');
+  console.log('  sandcastle: rewrote main.ts → ~/.pi/agent mount + .beads in copyToWorktree');
 }
 
 function rewriteSandcastlePlanPrompt() {
