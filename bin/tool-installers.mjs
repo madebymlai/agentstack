@@ -144,6 +144,7 @@ export async function setupSandcastleForProject({ rebuild = false, clean = false
     execSync(initCmd, { stdio: 'inherit' });
 
     rewriteSandcastleMain();
+    rewriteSandcastleContainerfile();
 
     if (standardsBackup) restoreCodingStandards(standardsBackup);
   }
@@ -202,6 +203,48 @@ function rewriteSandcastleMain() {
 
   writeFileSync(mainPath, content);
   console.log('  sandcastle: rewrote main.ts → ~/.pi/agent mount + .beads in copyToWorktree');
+}
+
+// Add uv (Astral) to the generated Containerfile so the sandbox has a Python
+// toolchain alongside npm. uv is preferred over python3-pip because it isn't
+// bound to a Python major version — the onSandboxReady hook / agent can run
+// `uv python install`, `uv venv`, `uv pip install` for whatever the project needs.
+function rewriteSandcastleContainerfile() {
+  const containerPath = resolve('.sandcastle', 'Containerfile');
+  if (!existsSync(containerPath)) return;
+
+  let content = readFileSync(containerPath, 'utf-8');
+
+  // Idempotent: a rebuild over an already-patched Containerfile is a no-op.
+  if (content.includes('astral.sh/uv/install.sh')) return;
+
+  const sysDeps = [
+    '# Install system dependencies',
+    'RUN apt-get update && apt-get install -y \\',
+    '  git \\',
+    '  curl \\',
+    '  jq \\',
+    '  && rm -rf /var/lib/apt/lists/*',
+  ].join('\n');
+
+  const uvBlock = [
+    '',
+    '# Install uv (Astral): a standalone, version-agnostic Python toolchain alongside',
+    "# npm. Unlike python3-pip it isn't bound to a Python major version — the agent",
+    '# runs `uv python install <ver>` / `uv venv` / `uv pip install ...` for whatever',
+    '# the project needs. Installed to /usr/local/bin so the non-root agent user gets it.',
+    'RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin INSTALLER_NO_MODIFY_PATH=1 sh',
+  ].join('\n');
+
+  const patched = content.replace(sysDeps, `${sysDeps}\n${uvBlock}`);
+
+  if (patched === content) {
+    console.log('  sandcastle: Containerfile did not match expected system-deps block, skipping uv install');
+    return;
+  }
+
+  writeFileSync(containerPath, patched);
+  console.log('  sandcastle: added uv (Astral) to Containerfile');
 }
 
 function rewriteSandcastlePlanPrompt() {
