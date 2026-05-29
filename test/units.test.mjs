@@ -401,6 +401,13 @@ test('patchContainerfileForMise: redirects every package manager cache into one 
   assert.match(out, /ENV GOMODCACHE="\/home\/agent\/\.cache\/go\/mod"/);
 });
 
+test('patchContainerfileForMise: makes the mise data dir writable by the agent user', () => {
+  const out = patchContainerfileForMise(VANILLA_CONTAINERFILE, []);
+  // So the runtime `mise install` reconcile (run as agent) can add a tool the bake missed,
+  // instead of failing to write to a root-owned dir.
+  assert.match(out, /chown -R \$AGENT_UID:\$AGENT_GID \/usr\/local\/share\/mise/);
+});
+
 test('patchContainerfileForMise: is idempotent', () => {
   const once = patchContainerfileForMise(VANILLA_CONTAINERFILE, ['mise.toml']);
   const twice = patchContainerfileForMise(once, ['mise.toml']);
@@ -409,7 +416,7 @@ test('patchContainerfileForMise: is idempotent', () => {
 
 test('patchContainerfileForMise: no version files means no build-time bake step', () => {
   const out = patchContainerfileForMise(VANILLA_CONTAINERFILE, []);
-  assert.doesNotMatch(out, /mise install/);
+  assert.doesNotMatch(out, /mise install -C/); // the bake command, not an incidental mention
   assert.doesNotMatch(out, /^COPY /m);
 });
 
