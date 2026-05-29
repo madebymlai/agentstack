@@ -184,6 +184,27 @@ function rewriteSandcastleMain() {
 
   const original = content;
 
+  // Sandcastle requires every mount hostPath to already exist, so have main.ts create the
+  // host-side cache dirs the mounts reference. Covers every entry point (afk, npx tsx, npm
+  // script), not just one launcher. Anchored on the zod import (last in the template).
+  if (!content.includes('mkdirSync')) {
+    content = content.replace(
+      'import { z } from "zod";',
+      [
+        'import { z } from "zod";',
+        'import { mkdirSync } from "node:fs";',
+        'import { homedir } from "node:os";',
+        'import { join } from "node:path";',
+        '',
+        '// Sandcastle requires every mount hostPath to already exist, so create the',
+        '// host-side cache dirs the podman mounts below reference (no-op if present).',
+        'for (const dir of ["sandcastle-mise", "sandcastle-pkgs"]) {',
+        '  mkdirSync(join(homedir(), ".cache", dir), { recursive: true });',
+        '}',
+      ].join('\n'),
+    );
+  }
+
   // Mounts: ~/.pi/agent for agent auth/config; a mise cache so toolchains aren't
   // re-downloaded each run; and a package-manager cache (~/.cache) so project deps
   // (torch, cargo registry, etc.) download once instead of on every fresh worktree.
