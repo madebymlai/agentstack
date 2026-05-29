@@ -150,6 +150,8 @@ export async function setupSandcastleForProject({ rebuild = false, clean = false
   }
 
   rewriteSandcastlePlanPrompt();
+  rewriteSandcastleImplementPrompt();
+  rewriteSandcastleMergePrompt();
 }
 
 const CODING_STANDARDS_FILE = 'CODING_STANDARDS.md';
@@ -182,12 +184,12 @@ function rewriteSandcastleMain() {
 
   const original = content;
 
-  // Mounts: ~/.pi/agent for agent auth/config, and a host-side mise cache so each
-  // sandbox reuses already-downloaded toolchains instead of re-downloading them
-  // (a cold `mise install` is tens of seconds per toolchain; warm is ~instant).
+  // Mounts: ~/.pi/agent for agent auth/config; a mise cache so toolchains aren't
+  // re-downloaded each run; and a package-manager cache (~/.cache) so project deps
+  // (torch, cargo registry, etc.) download once instead of on every fresh worktree.
   content = content.replaceAll(
     'podman()',
-    'podman({ mounts: [{ hostPath: "~/.pi/agent", sandboxPath: "~/.pi/agent" }, { hostPath: "~/.cache/sandcastle-mise", sandboxPath: "/home/agent/.local/share/mise" }] })',
+    'podman({ mounts: [{ hostPath: "~/.pi/agent", sandboxPath: "~/.pi/agent" }, { hostPath: "~/.cache/sandcastle-mise", sandboxPath: "/home/agent/.local/share/mise" }, { hostPath: "~/.cache/sandcastle-pkgs", sandboxPath: "/home/agent/.cache" }] })',
   );
 
   // Copy .beads/ into each worktree alongside node_modules. Stealth mode
@@ -254,6 +256,16 @@ function rewriteSandcastleContainerfile() {
     '# Keep state inside the agent-owned mise dir: the cache mount\'s parent dirs are',
     "# created as root, so the default ~/.local/state isn't writable by the agent user.",
     'ENV MISE_STATE_DIR="/home/agent/.local/share/mise/state"',
+    '',
+    "# Redirect every package manager's cache into one dir so a host-mounted volume (see",
+    '# main.ts) persists downloads/builds across ephemeral worktrees — heavy deps (torch,',
+    "# etc.) download once, not every run. Agnostic to the project's package manager.",
+    'ENV XDG_CACHE_HOME="/home/agent/.cache"',
+    'ENV CARGO_HOME="/home/agent/.cache/cargo"',
+    'ENV GRADLE_USER_HOME="/home/agent/.cache/gradle"',
+    'ENV NPM_CONFIG_CACHE="/home/agent/.cache/npm"',
+    'ENV GOMODCACHE="/home/agent/.cache/go/mod"',
+    'ENV MAVEN_ARGS="-Dmaven.repo.local=/home/agent/.cache/maven"',
   ].join('\n');
 
   const patched = content.replace(sysDeps, `${sysDeps}\n${miseBlock}`);
@@ -264,7 +276,7 @@ function rewriteSandcastleContainerfile() {
   }
 
   writeFileSync(containerPath, patched);
-  console.log('  sandcastle: added mise (jdx) to Containerfile');
+  console.log('  sandcastle: added mise (jdx) + package-manager cache env to Containerfile');
 }
 
 function rewriteSandcastlePlanPrompt() {
@@ -280,4 +292,75 @@ function rewriteSandcastlePlanPrompt() {
 
   writeFileSync(promptPath, content);
   console.log('  sandcastle: plan-prompt.md → bd ready --exclude-type=epic');
+}
+
+// Shared, project-agnostic guidance injected into the generated agent prompts: runtimes and
+// standalone tools come from `mise`, deps from each project's native manager, and tests run
+// with the project's own commands. Defined once so the implement/merge prompts don't
+// duplicate the text (both the implementer and the merger run in their own containers and
+// must set up the toolchain before running tests).
+const MISE_SETUP_SECTION = [
+  '# SETUP',
+  '',
+  'The sandbox is project-agnostic — language runtimes and standalone dev tools come from',
+  '`mise`, not pre-installed. Set up the environment BEFORE running tests:',
+  '',
+  "1. Provision the runtime with `mise use <lang>@<version>` for this project's stack",
+  '   (e.g. `python@3.12`, `java@21`, `rust`, `node@22`); it installs non-root and is cached.',
+  "2. Install this project's dependencies with its native manager, reading its own manifest",
+  '   (`uv sync`/`pip install`, `npm install`, `cargo`, `mvn`/`gradle`). This brings in test',
+  "   runners like pytest/vitest that must import the project's code.",
+  '3. Add any standalone lint/format tools with `mise use pipx:<tool>` / `uvx:` / `npm:`.',
+].join('\n');
+
+const AGNOSTIC_TEST_INSTRUCTION = [
+  "run this project's own typecheck and test commands to ensure they pass —",
+  'use the commands for the stack you set up above (e.g. `pytest`, `cargo test`, `mvn test`,',
+  '`npm run test`). Do not assume npm.',
+].join('\n');
+
+// The generated implement prompt assumes Node: no environment setup, and it hardcodes
+// `npm run typecheck`/`npm run test`. Insert the shared SETUP before EXECUTION (so the
+// runtime/deps are provisioned before the test-running RGR loop) and make the feedback loop
+// run the project's own test commands.
+function rewriteSandcastleImplementPrompt() {
+  const promptPath = resolve('.sandcastle', 'implement-prompt.md');
+  if (!existsSync(promptPath)) return;
+
+  let content = readFileSync(promptPath, 'utf-8');
+  if (content.includes('mise use')) return; // idempotent: already rewritten
+  const original = content;
+
+  content = content.replace('# EXECUTION', `${MISE_SETUP_SECTION}\n\n# EXECUTION`);
+  content = content.replace(
+    'Before committing, run `npm run typecheck` and `npm run test` to ensure the tests pass.',
+    `Before committing, ${AGNOSTIC_TEST_INSTRUCTION}`,
+  );
+
+  if (content === original) return;
+
+  writeFileSync(promptPath, content);
+  console.log('  sandcastle: implement-prompt.md → SETUP section + project-agnostic test feedback');
+}
+
+// The merger runs in its own fresh container (the implementer's setup doesn't carry over) and
+// runs the post-merge tests, so it needs the same SETUP + agnostic test step as the implementer.
+function rewriteSandcastleMergePrompt() {
+  const promptPath = resolve('.sandcastle', 'merge-prompt.md');
+  if (!existsSync(promptPath)) return;
+
+  let content = readFileSync(promptPath, 'utf-8');
+  if (content.includes('mise use')) return; // idempotent: already rewritten
+  const original = content;
+
+  content = content.replace('For each branch:', `${MISE_SETUP_SECTION}\n\n# MERGE\n\nFor each branch:`);
+  content = content.replace(
+    'After resolving conflicts, run `npm run typecheck` and `npm run test` to verify everything works',
+    `After resolving conflicts, ${AGNOSTIC_TEST_INSTRUCTION}`,
+  );
+
+  if (content === original) return;
+
+  writeFileSync(promptPath, content);
+  console.log('  sandcastle: merge-prompt.md → SETUP section + project-agnostic test step');
 }
