@@ -306,22 +306,10 @@ function rewriteSandcastlePlanPrompt() {
 const MISE_SETUP_SECTION = [
   '# SETUP',
   '',
-  'The sandbox is project-agnostic — language runtimes and standalone dev tools come from',
-  '`mise`, not pre-installed. Set up the environment BEFORE running tests:',
-  '',
-  "1. Provision the runtime with `mise use <lang>@<version>` for this project's stack",
-  '   (e.g. `python@3.12`, `java@21`, `rust`, `node@22`); it installs non-root and is cached.',
-  "2. Install this project's dependencies with its native manager, reading its own manifest",
-  '   (`uv sync`/`pip install`, `npm install`, `cargo`, `mvn`/`gradle`). This brings in test',
-  "   runners like pytest/vitest that must import the project's code.",
-  '3. Add any standalone lint/format tools with `mise use pipx:<tool>` / `uvx:` / `npm:`.',
+  'Runtimes/tools are not pre-installed — provision what this project needs with mise (see `mise use --help`).',
 ].join('\n');
 
-const AGNOSTIC_TEST_INSTRUCTION = [
-  "run this project's own typecheck and test commands to ensure they pass —",
-  'use the commands for the stack you set up above (e.g. `pytest`, `cargo test`, `mvn test`,',
-  '`npm run test`). Do not assume npm.',
-].join('\n');
+const AGNOSTIC_TEST_INSTRUCTION = "run this project's own typecheck and tests.";
 
 // The generated implement prompt assumes Node: no environment setup, and it hardcodes
 // `npm run typecheck`/`npm run test`. Insert the shared SETUP before EXECUTION (so the
