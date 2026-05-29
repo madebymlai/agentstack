@@ -196,19 +196,28 @@ function rewriteSandcastleMain() {
     'const copyToWorktree = ["node_modules", ".beads"];',
   );
 
+  // Provision each project's toolchain before installing npm deps: mise reads the
+  // worktree's mise.toml / .tool-versions and installs whatever languages it
+  // declares, keeping the sandbox agnostic to the project's stack.
+  content = content.replace(
+    'onSandboxReady: [{ command: "npm install" }]',
+    'onSandboxReady: [{ command: "mise install" }, { command: "npm install" }]',
+  );
+
   if (content === original) {
     console.log('  sandcastle: main.ts did not match expected patterns, skipping rewrite');
     return;
   }
 
   writeFileSync(mainPath, content);
-  console.log('  sandcastle: rewrote main.ts → ~/.pi/agent mount + .beads in copyToWorktree');
+  console.log('  sandcastle: rewrote main.ts → ~/.pi/agent mount, .beads in copyToWorktree, mise install hook');
 }
 
-// Add uv (Astral) to the generated Containerfile so the sandbox has a Python
-// toolchain alongside npm. uv is preferred over python3-pip because it isn't
-// bound to a Python major version — the onSandboxReady hook / agent can run
-// `uv python install`, `uv venv`, `uv pip install` for whatever the project needs.
+// Add mise (jdx) to the generated Containerfile so the sandbox is agnostic to the
+// project's languages. mise is a single polyglot toolchain manager: each project
+// declares its versions in mise.toml / .tool-versions and `mise install` (run in
+// the worktree) provisions Python, Node, Rust, Java, Go, etc. on demand — so the
+// image ships no per-language installers.
 function rewriteSandcastleContainerfile() {
   const containerPath = resolve('.sandcastle', 'Containerfile');
   if (!existsSync(containerPath)) return;
@@ -216,7 +225,7 @@ function rewriteSandcastleContainerfile() {
   let content = readFileSync(containerPath, 'utf-8');
 
   // Idempotent: a rebuild over an already-patched Containerfile is a no-op.
-  if (content.includes('astral.sh/uv/install.sh')) return;
+  if (content.includes('mise.run')) return;
 
   const sysDeps = [
     '# Install system dependencies',
@@ -227,24 +236,29 @@ function rewriteSandcastleContainerfile() {
     '  && rm -rf /var/lib/apt/lists/*',
   ].join('\n');
 
-  const uvBlock = [
+  const miseBlock = [
     '',
-    '# Install uv (Astral): a standalone, version-agnostic Python toolchain alongside',
-    "# npm. Unlike python3-pip it isn't bound to a Python major version — the agent",
-    '# runs `uv python install <ver>` / `uv venv` / `uv pip install ...` for whatever',
-    '# the project needs. Installed to /usr/local/bin so the non-root agent user gets it.',
-    'RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin INSTALLER_NO_MODIFY_PATH=1 sh',
+    '# Install mise (jdx): a project-agnostic, polyglot toolchain manager. One binary',
+    '# provisions Python, Node, Rust, Java, Go, etc. — each project declares its versions',
+    '# in mise.toml / .tool-versions and `mise install` materializes them on demand, so',
+    '# the image needs no per-language installers. Installed to /usr/local/bin (shared)',
+    '# with shims on PATH so plain `python`/`cargo`/`java` resolve in the non-interactive',
+    '# shells the agent uses.',
+    'RUN curl https://mise.run | MISE_INSTALL_PATH=/usr/local/bin/mise sh',
+    'ENV PATH="/home/agent/.local/share/mise/shims:$PATH"',
+    '# Auto-trust the bind-mounted worktree so mise loads its mise.toml without prompting.',
+    'ENV MISE_TRUSTED_CONFIG_PATHS="/home/agent/workspace"',
   ].join('\n');
 
-  const patched = content.replace(sysDeps, `${sysDeps}\n${uvBlock}`);
+  const patched = content.replace(sysDeps, `${sysDeps}\n${miseBlock}`);
 
   if (patched === content) {
-    console.log('  sandcastle: Containerfile did not match expected system-deps block, skipping uv install');
+    console.log('  sandcastle: Containerfile did not match expected system-deps block, skipping mise install');
     return;
   }
 
   writeFileSync(containerPath, patched);
-  console.log('  sandcastle: added uv (Astral) to Containerfile');
+  console.log('  sandcastle: added mise (jdx) to Containerfile');
 }
 
 function rewriteSandcastlePlanPrompt() {
