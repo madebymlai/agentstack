@@ -256,6 +256,19 @@ function miseBakeBlock(versionFiles) {
   ].join('\n');
 }
 
+// Hand the shared mise data dir to the agent user so the runtime `mise install` reconcile can add
+// any toolchain the build-time bake didn't cover (otherwise it would fail writing to a root-owned
+// dir). Uses the build-arg UID/GID so it matches whatever the agent user is aligned to; mkdir -p
+// covers the no-bake case where `mise install` never created the dir.
+const MISE_CHOWN_BLOCK = [
+  '',
+  '# Make the shared mise dir writable by the agent user so the runtime `mise install` reconcile',
+  "# can provision a toolchain the build-time bake didn't cover.",
+  'ARG AGENT_UID=1000',
+  'ARG AGENT_GID=1000',
+  'RUN mkdir -p /usr/local/share/mise && chown -R $AGENT_UID:$AGENT_GID /usr/local/share/mise',
+].join('\n');
+
 // Patch the generated Containerfile to provision toolchains via mise. Pure: takes the file
 // content and the project's version files (to COPY for the build-time install) and returns the
 // patched content. Idempotent — re-running over an already-patched Containerfile is a no-op.
@@ -266,7 +279,7 @@ export function patchContainerfileForMise(content, versionFiles = []) {
   const bake = versionFiles.length ? `\n${miseBakeBlock(versionFiles)}` : '';
   return content.replace(
     CONTAINERFILE_SYSDEPS_ANCHOR,
-    `${CONTAINERFILE_SYSDEPS_ANCHOR}\n${MISE_INSTALL_BLOCK}${bake}`,
+    `${CONTAINERFILE_SYSDEPS_ANCHOR}\n${MISE_INSTALL_BLOCK}${bake}\n${MISE_CHOWN_BLOCK}`,
   );
 }
 
@@ -377,11 +390,12 @@ function rewriteSandcastlePlanPrompt() {
   console.log('  sandcastle: plan-prompt.md → bd ready --exclude-type=epic');
 }
 
-// Project-agnostic test guidance for the generated agent prompts: tests run with the project's
-// own commands, not the template's hardcoded npm scripts. No assumption about how the toolchain
-// is provided.
+// Project-agnostic test guidance for the generated agent prompts: provision the toolchain/deps
+// (mise + the project's own installer) and run the project's own commands, not the template's
+// hardcoded npm scripts. The onSandboxReady hooks already do this, but stating it in the prompt
+// makes the agent self-heal if a tool or dependency is missing.
 const AGNOSTIC_TEST_INSTRUCTION =
-  "run this project's own typecheck and tests.";
+  "provision this project's toolchain and dependencies if needed, then run its typecheck and tests.";
 
 // The generated implement prompt hardcodes `npm run typecheck`/`npm run test`. Make the feedback
 // loop run the project's own commands instead.
