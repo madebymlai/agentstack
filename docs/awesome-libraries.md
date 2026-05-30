@@ -93,6 +93,8 @@ The 2026 trend is **consolidation** — one Rust tool replacing a pile of them (
 | **Java** | [**Error Prone**](https://errorprone.info/) + [**NullAway**](https://github.com/uber/NullAway) (+ [Checkstyle](https://checkstyle.org/), optional) | [**Spotless**](https://github.com/diffplug/spotless) → [Palantir Java Format](https://github.com/palantir/palantir-java-format) | Spotless `apply` (Palantir engine) + `ratchet` for changed files; Error Prone + NullAway with [JSpecify](https://jspecify.dev/) annotations. Tune Error Prone severity or it floods. Checkstyle only for non-format rules. |
 | **Rust** | [**Clippy**](https://doc.rust-lang.org/clippy/) | [**rustfmt**](https://github.com/rust-lang/rustfmt) | `cargo clippy --all-targets --all-features -- -D warnings`; set levels in `[lints.clippy]` (pedantic = warn, `priority = -1`). Add [cargo-deny](https://github.com/EmbarkStudios/cargo-deny) for advisories/licenses. Pin the toolchain — new lints break green builds. |
 
+> **Running them in [pre-commit hooks](#pre-commit-hooks):** [**Lefthook**](https://github.com/evilmartians/lefthook) runs any of these (they're just commands) — and is the better fit when Java is in the mix, since Error Prone / NullAway run via your Gradle/Maven build, not as standalone hooks. [**prek**](https://github.com/j178/prek) fits the Python / JS / Rust tools (most ship a pre-commit hook); Java's compiler-plugin bug-finders don't fit its model.
+
 > **Single-vendor note:** Ruff, `ty`, and `uv` are all by Astral (acquired by OpenAI in 2026). Tools stay open source and forkable, but it concentrates Python tooling under one vendor.
 
 ---
