@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "node --test \"test/**/*.test.mjs\"",
-    "check": "node --check bin/install.mjs && node --check bin/afk.mjs && node --check bin/cli.mjs && node --check bin/sandcastle-setup.mjs"
+    "check": "node --check bin/install.mjs && node --check bin/afk.mjs && node --check bin/cli.mjs"
   },
   "files": [
     "bin/",
@@ -24,6 +24,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@ai-hero/sandcastle": "^0.6.6"
+    "@ai-hero/sandcastle": "^0.6.5"
   }
 }
