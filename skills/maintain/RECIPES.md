@@ -91,8 +91,32 @@ COPY pubspec.yaml pubspec.lock /tmp/deps/
 RUN cd /tmp/deps && dart pub get && chmod -R a+w /usr/local/pub-cache
 ```
 
-Flutter is heavier (clone the SDK to `/usr/local/flutter`, add `bin` to PATH,
-run `flutter precache`); only add it if the project actually uses Flutter.
+## Flutter (`pubspec.yaml` with `sdk: flutter`)
+
+Not the same as Dart — Flutter bundles its own Dart SDK, so install the whole
+Flutter SDK (heavier) and use `flutter`, not the `dart` package. Use the Flutter
+recipe when `pubspec.yaml` declares a Flutter dependency (`sdk: flutter`) or an
+`environment: flutter:` constraint; otherwise use the plain Dart recipe above.
+
+```dockerfile
+# maintain: flutter
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git curl unzip xz-utils ca-certificates && rm -rf /var/lib/apt/lists/*
+ENV FLUTTER_HOME=/usr/local/flutter PUB_CACHE=/usr/local/pub-cache \
+    PATH=/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:$PATH
+RUN git clone --depth 1 -b stable https://github.com/flutter/flutter.git /usr/local/flutter && \
+    git config --global --add safe.directory /usr/local/flutter && \
+    flutter --version && flutter precache && \
+    mkdir -p /usr/local/pub-cache && chmod -R a+w /usr/local/flutter /usr/local/pub-cache
+# deps
+COPY pubspec.yaml pubspec.lock /tmp/deps/
+RUN cd /tmp/deps && flutter pub get && chmod -R a+w /usr/local/pub-cache
+```
+
+Notes: the SDK clone is large — pin a version by cloning a tag (`-b 3.x.y`)
+instead of `stable`. `chmod -R a+w` on `/usr/local/flutter` is required because
+Flutter writes into its own `bin/cache` on first run as the agent user. Test
+command is `flutter test` (not `dart test`).
 
 ## Node (`package.json`)
 
