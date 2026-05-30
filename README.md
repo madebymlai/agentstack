@@ -77,6 +77,12 @@ Workflow guide for repositories using [beads](https://github.com/gastownhall/bea
 
 For hands-free agent prompting via voice dictation, see [**hyprwhspr**](https://github.com/goodroot/hyprwhspr) — Linux speech-to-text with a comparison of local + cloud transcriber backends (Cohere Transcribe, Parakeet, faster-whisper, whisper.cpp, Groq / OpenAI / Gemini REST + WebSocket).
 
+## Awesome libraries
+
+A curated, opinionated index of best-in-class libraries per domain — picked for the agent-stack default profile: **structured JSON, OpenTelemetry trace correlation, low overhead, stdout-first (12-factor), good ergonomics.**
+
+See [**`docs/awesome-libraries.md`**](docs/awesome-libraries.md). First index: [logging](docs/awesome-libraries.md#logging) for Python, Java, Rust, TypeScript, and JavaScript.
+
 ## Candidates
 
 Tools being considered for future inclusion. These are not installed today.
