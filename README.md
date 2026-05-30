@@ -73,15 +73,12 @@ Drives an interactive Q&A — propose, you accept or reject. If `tokf` is instal
 
 Workflow guide for repositories using [beads](https://github.com/gastownhall/beads) as the shared task tracker. Tells agents to use `bd` (not markdown TODOs) for ready-work discovery, atomic claiming, dependency-aware follow-ups, and durable handoff across sessions or contributors.
 
-## Transcribers
+## [Awesome libraries](docs/awesome-libraries.md)
 
-For hands-free agent prompting via voice dictation, see [**hyprwhspr**](https://github.com/goodroot/hyprwhspr) — Linux speech-to-text with a comparison of local + cloud transcriber backends (Cohere Transcribe, Parakeet, faster-whisper, whisper.cpp, Groq / OpenAI / Gemini REST + WebSocket).
+One opinionated pick per job — the boring choice that ships, not the trendy one.
 
-## Awesome libraries
-
-A curated, opinionated index of best-in-class libraries per domain — picked for the agent-stack default profile: **structured JSON, OpenTelemetry trace correlation, low overhead, stdout-first (12-factor), good ergonomics.**
-
-See [**`docs/awesome-libraries.md`**](docs/awesome-libraries.md). First index: [logging](docs/awesome-libraries.md#logging) for Python, Java, Rust, TypeScript, and JavaScript.
+- [**Logging**](docs/awesome-libraries.md#logging) — structured, low-overhead logging that plays nice with tracing
+- [**Transcribers**](docs/awesome-libraries.md#transcribers) — hands-free agent prompting by voice
 
 ## Candidates
 
