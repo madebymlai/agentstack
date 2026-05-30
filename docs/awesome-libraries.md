@@ -2,7 +2,7 @@
 
 A curated, opinionated index of best-in-class libraries per domain — chosen for production use in agent stacks, weighing **performance, ergonomics, and maintenance health**. Each index opens with the **profile** it's judged against (the criteria that actually matter for that domain).
 
-Each entry gives the **pick**, a **runner-up**, and the **one caveat** worth knowing before you commit — not an exhaustive list. Contrarian alternatives are called out where the "obvious" winner isn't right for every shop.
+Each entry gives the **pick**, a **substitute** (when the pick doesn't fit your shop), and the **mise en place** — the few things to get right when setting it up. Not an exhaustive list.
 
 ## Index
 
@@ -15,13 +15,13 @@ Each entry gives the **pick**, a **runner-up**, and the **one caveat** worth kno
 
 **Profile:** structured JSON output · OpenTelemetry trace/span correlation · low overhead / high throughput · stdout-first (12-factor — the platform collects) · clean ergonomics.
 
-| Language | Pick | Runner-up | Caveat worth knowing |
-|----------|------|-----------|----------------------|
-| **Python** | [**structlog**](https://github.com/hynek/structlog) (+ [`orjson`](https://github.com/ijl/orjson), [`BytesLoggerFactory`](https://www.structlog.org/en/stable/api.html#structlog.BytesLoggerFactory)) | [stdlib `logging`](https://docs.python.org/3/library/logging.html) + [python-json-logger](https://github.com/nhairs/python-json-logger) | Fast path bypasses stdlib — routing through `ProcessorFormatter` for ecosystem compat loses the perf. `contextvars` don't cross the sync↔async boundary. Bus-factor ~1. (`picologging` is stalled — avoid.) |
-| **Java** | [**SLF4J 2.x**](https://www.slf4j.org/) + [**Log4j2**](https://logging.apache.org/log4j/2.x/) — Disruptor async loggers + JSON Template Layout | [Logback](https://logback.qos.ch/) + [Spring Boot 3.4 structured logging](https://spring.io/blog/2024/08/23/structured-logging-in-spring-boot-3-4/) | Throughput edge over Logback is real only *under thread contention* (lock-free ring buffer vs blocking queue). "Garbage-free" is low-alloc, not zero — stack traces always allocate. Log4Shell remains a supply-chain/optics drag; pin the latest 2.x. |
-| **Rust** | [**tracing**](https://github.com/tokio-rs/tracing) + [**tracing-bunyan-formatter**](https://github.com/LukeMathWalker/tracing-bunyan-formatter) + [tracing-opentelemetry](https://crates.io/crates/tracing-opentelemetry) | [fastrace](https://github.com/fast/fastrace) (tracing-only, tail-sampling) | Use the bunyan formatter — stock `tracing-subscriber` JSON has [no span-field inheritance](https://github.com/tokio-rs/tracing/issues/218). Never hold `span.enter()` across `.await`; use `#[instrument]`. Pin exact OTel versions (churns every release; traces SDK still pre-1.0). |
-| **JS / TS** (Node) | [**Pino**](https://github.com/pinojs/pino) + [`@opentelemetry/instrumentation-pino`](https://github.com/open-telemetry/opentelemetry-js-contrib/tree/main/packages/instrumentation-pino) | [Winston](https://github.com/winstonjs/winston) | ~2.3× Winston in [Pino's canonical micro-bench](https://github.com/pinojs/pino/blob/main/docs/benchmarks.md) (not the folklore "5–8×"). Async transport can drop logs on crash before the worker boots — flush on shutdown. TS types are a known gripe. |
-| **JS / TS** (non-Node: Deno, Bun, browser, edge) | [**LogTape**](https://github.com/dahlia/logtape) | tslog / roarr | The cross-runtime differentiator: Pino degrades badly off-Node (Bun, edge, browser) and its worker transports break on Cloudflare Workers. LogTape is zero-dependency and runs everywhere — but 1.0 is recent and benchmarks are self-reported. |
+| Language | Pick | Substitute | Mise en place — set it up right |
+|----------|------|------------|--------------------------------|
+| **Python** | [**structlog**](https://github.com/hynek/structlog) (+ [`orjson`](https://github.com/ijl/orjson), [`BytesLoggerFactory`](https://www.structlog.org/en/stable/api.html#structlog.BytesLoggerFactory)) | [stdlib `logging`](https://docs.python.org/3/library/logging.html) + [python-json-logger](https://github.com/nhairs/python-json-logger) | Wire `orjson` + `BytesLoggerFactory` directly (not via stdlib `ProcessorFormatter`). Add a `trace_id`/`span_id` processor; set context in the same sync/async scope you log from. |
+| **Java** | [**SLF4J 2.x**](https://www.slf4j.org/) + [**Log4j2**](https://logging.apache.org/log4j/2.x/) — Disruptor async loggers + JSON Template Layout | [Logback](https://logback.qos.ch/) + [Spring Boot 3.4 structured logging](https://spring.io/blog/2024/08/23/structured-logging-in-spring-boot-3-4/) | Enable async loggers (Disruptor) + JSON Template Layout. Add the [OTel Java agent](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/logger-mdc-instrumentation.md) for MDC `trace_id`/`span_id`. Pin latest 2.x. |
+| **Rust** | [**tracing**](https://github.com/tokio-rs/tracing) + [**tracing-subscriber**](https://docs.rs/tracing-subscriber) + [**tracing-bunyan-formatter**](https://github.com/LukeMathWalker/tracing-bunyan-formatter) + [tracing-opentelemetry](https://crates.io/crates/tracing-opentelemetry) | [fastrace](https://github.com/fast/fastrace) (tracing-only, tail-sampling) | Init `tracing-subscriber` (Registry + `tracing-bunyan-formatter` JSON) in `main` before any logging; verify a test line hits stdout. Use `#[instrument]`, never `span.enter()` across `.await`. Pin exact OTel versions. |
+| **JS / TS** (Node) | [**Pino**](https://github.com/pinojs/pino) + [`@opentelemetry/instrumentation-pino`](https://github.com/open-telemetry/opentelemetry-js-contrib/tree/main/packages/instrumentation-pino) | [Winston](https://github.com/winstonjs/winston) | JSON to stdout. Add `@opentelemetry/instrumentation-pino`. Flush on shutdown. |
+| **JS / TS** (non-Node: Deno, Bun, browser, edge) | [**LogTape**](https://github.com/dahlia/logtape) | tslog / roarr | Use LogTape's core + per-runtime sinks. Pin a version. |
 
 ### The unifying pattern (all languages)
 
@@ -53,10 +53,10 @@ Speech-to-text for hands-free agent prompting — dictate instead of type.
 
 **Profile:** low dictation latency · accuracy on technical/code speech · local vs cloud (privacy + offline) · clean push-to-talk ergonomics.
 
-| Pick | Caveat worth knowing |
-|------|----------------------|
-| [**hyprwhspr**](https://github.com/goodroot/hyprwhspr) — Linux push-to-talk dictation that fronts a swappable transcriber backend (local whisper.cpp / faster-whisper / Parakeet, or cloud Groq / OpenAI / Gemini / Cohere over REST or WebSocket) | Linux-first (Wayland/Hyprland-friendly). It's a *frontend* — your latency, accuracy, and privacy come from whichever backend you wire up. |
+| Pick | Mise en place — set it up right |
+|------|--------------------------------|
+| [**hyprwhspr**](https://github.com/goodroot/hyprwhspr) — Linux push-to-talk dictation that fronts a swappable transcriber backend (local whisper.cpp / faster-whisper / Parakeet, or cloud Groq / OpenAI / Gemini / Cohere over REST or WebSocket) | Linux/Wayland. Pick a backend: local for privacy/offline, cloud for accuracy. |
 
 ---
 
-> **Adding an index?** Append a new `##` section here, open it with a one-line **Profile** of the criteria that matter for that domain, keep the pick/runner-up/caveat shape, and add a bullet to the [Index](#index). Link it from the README's *Awesome libraries* section.
+> **Adding an index?** Append a new `##` section here, open it with a one-line **Profile** of the criteria that matter for that domain, keep the pick/substitute/mise-en-place shape, and add a bullet to the [Index](#index). Link it from the README's *Awesome libraries* section.
