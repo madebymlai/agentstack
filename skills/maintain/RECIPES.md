@@ -5,15 +5,15 @@ line. Each leads with a `# maintain: <lang>` anchor (skip if already present).
 
 Conventions used by every recipe:
 
-- **System-wide install** under `/usr/local` so the runtime `agent` user finds
+- **System-wide install** under `/usr/local`, so the runtime `agent` user finds
   it regardless of `$HOME`.
-- **`chmod -R a+w`** on caches so the non-root agent can read and extend them.
-- **DEPS pre-fetch** copies manifests to `/tmp/deps` (never the project root —
-  the worktree is bind-mounted over `/home/agent/workspace` at runtime, so an
-  in-tree install would be shadowed). The downloaded packages land in the
-  system-wide cache, which is *not* shadowed, so tests run offline.
-- Replace `<PIN>` with the version from the project's pin file (e.g. `go.mod`'s
-  `go` directive, `rust-toolchain.toml`, `.tool-versions`). Omit a version to
+- **`chmod -R a+w`** on caches, so the non-root agent can read and extend them.
+- **DEPS pre-fetch** copies manifests to `/tmp/deps`, never the project root: at
+  runtime the worktree is bind-mounted over `/home/agent/workspace`, so an
+  in-tree install would be shadowed. The downloaded packages land in the
+  system-wide cache, which is *not* shadowed — so tests run offline.
+- Replace `<PIN>` with the version from the project's pin file (`go.mod`'s `go`
+  directive, `rust-toolchain.toml`, `.tool-versions`, etc.). Omit the version to
   get the latest stable.
 
 ## Rust (`Cargo.toml`)
@@ -93,9 +93,9 @@ RUN cd /tmp/deps && dart pub get && chmod -R a+w /usr/local/pub-cache
 
 ## Flutter (`pubspec.yaml` with `sdk: flutter`)
 
-Not the same as Dart — Flutter bundles its own Dart SDK, so install the whole
-Flutter SDK (heavier) and use `flutter`, not the `dart` package. Use the Flutter
-recipe when `pubspec.yaml` declares a Flutter dependency (`sdk: flutter`) or an
+Not the same as Dart: Flutter bundles its own Dart SDK, so install the whole
+(heavier) Flutter SDK and use `flutter`, not the `dart` package. Use this recipe
+when `pubspec.yaml` declares a Flutter dependency (`sdk: flutter`) or an
 `environment: flutter:` constraint; otherwise use the plain Dart recipe above.
 
 ```dockerfile
@@ -115,8 +115,8 @@ RUN cd /tmp/deps && flutter pub get && chmod -R a+w /usr/local/pub-cache
 
 Notes: the SDK clone is large — pin a version by cloning a tag (`-b 3.x.y`)
 instead of `stable`. `chmod -R a+w` on `/usr/local/flutter` is required because
-Flutter writes into its own `bin/cache` on first run as the agent user. Test
-command is `flutter test` (not `dart test`).
+Flutter writes into its own `bin/cache` on first run as the agent user. The test
+command is `flutter test`, not `dart test`.
 
 ## Node (`package.json`)
 
@@ -124,7 +124,7 @@ Usually **nothing to add** — the `node:22-bookworm` base image already provide
 `node`/`npm`, and dependencies reach the worktree via `copyToWorktree`
 (`node_modules`) plus the runtime `npm install`. A build-time `npm ci` would be
 shadowed by the worktree bind mount. Only add a toolchain block if the project
-needs a *different* runtime (e.g. Bun): install it system-wide like the others.
+needs a *different* runtime (e.g. Bun) — install it system-wide like the others.
 
 <a id="verify"></a>
 ## Verify

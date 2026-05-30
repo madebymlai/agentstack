@@ -13,14 +13,15 @@ installs, and deps are baked into bounded image layers.
 
 <rules>
 - Build time only. Install toolchains and pre-fetch deps in the Containerfile,
-  never via a runtime hook (heavy toolchains time out the onSandboxReady hook).
-- Toolchain installs run as root, system-wide (/usr/local), and MUST be inserted
-  BEFORE the `USER ${AGENT_UID}:${AGENT_GID}` line. Make caches world-writable
-  (`chmod -R a+w`) so the non-root agent user can use and extend them.
-- Detect, don't assume. Only add a language's block if its marker file exists.
-- Idempotent. Anchor each block with a `# maintain: <lang>` comment; skip if it
-  is already present. Never duplicate a block on re-run.
-- Don't break the build. Keep the existing FROM/USER/WORKDIR/ENTRYPOINT intact;
+  never via a runtime hook — heavy toolchains time out the onSandboxReady hook.
+- Install as root, system-wide, before USER. Toolchains go under `/usr/local`
+  and MUST be inserted BEFORE the `USER ${AGENT_UID}:${AGENT_GID}` line. Make
+  caches world-writable (`chmod -R a+w`) so the non-root agent user can read and
+  extend them.
+- Detect, don't assume. Add a language's block only if its marker file exists.
+- Idempotent. Anchor each block with a `# maintain: <lang>` comment and skip it
+  if already present — never duplicate a block on re-run.
+- Don't break the build. Leave the existing FROM/USER/WORKDIR/ENTRYPOINT intact;
   only insert before the USER line.
 - Always rebuild when done. Containerfile edits do nothing until the image is
   rebuilt, and sandcastle never auto-rebuilds — so the final action is always
@@ -43,18 +44,18 @@ directive. Report what you found before editing.
 </phase>
 
 <phase name="plan">
-For each detected language, pick the recipe from [RECIPES.md](RECIPES.md). A
-recipe has two parts: a TOOLCHAIN block (install runtime + tools) and a DEPS
+For each detected language, pick the recipe from [RECIPES.md](RECIPES.md). Every
+recipe has two parts: a TOOLCHAIN block (install the runtime + tools) and a DEPS
 block (COPY the manifests to /tmp and pre-fetch into the system-wide cache).
-Confirm the plan with the user — list the languages and pinned versions.
+Confirm the plan with the user — list the languages and the pinned versions.
 </phase>
 
 <phase name="edit">
 Read `.sandcastle/Containerfile`. For each language not already marked:
 1. Insert its TOOLCHAIN + DEPS block immediately before the
    `USER ${AGENT_UID}:${AGENT_GID}` line (root context, after the base setup).
-2. Lead each block with `# maintain: <lang>` so re-runs are idempotent.
-Use the existing `ARG AGENT_UID/AGENT_GID` already declared above the USER line.
+2. Lead each block with `# maintain: <lang>` so re-runs stay idempotent.
+Reuse the existing `ARG AGENT_UID/AGENT_GID` already declared above the USER line.
 </phase>
 
 <phase name="build">
@@ -71,9 +72,9 @@ do not leave a half-patched, unbuilt Containerfile.
 <phase name="verify">
 After the build succeeds, smoke-test in the sandbox — see
 [RECIPES.md](RECIPES.md#verify):
-1. `podman run --rm --entrypoint <tool> sandcastle:<image> --version` to confirm
+1. `podman run --rm --entrypoint <tool> sandcastle:<image> --version` confirms
    the toolchain resolves for the agent user.
-2. If quick, run the project's test command in the container and confirm it
-   passes offline (deps were pre-fetched).
+2. If it's quick, run the project's test command in the container and confirm it
+   passes offline (the deps were pre-fetched).
 Report the result.
 </phase>
