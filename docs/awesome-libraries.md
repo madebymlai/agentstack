@@ -8,6 +8,8 @@ Each entry gives the **pick**, a **substitute** (when the pick doesn't fit your 
 
 - [Logging](#logging)
 - [Transcribers](#transcribers)
+- [Pre-commit hooks](#pre-commit-hooks)
+- [Linters & formatters](#linters--formatters)
 
 ---
 
@@ -59,4 +61,40 @@ Speech-to-text for hands-free agent prompting — dictate instead of type.
 
 ---
 
-> **Adding an index?** Append a new `##` section here, open it with a one-line **Profile** of the criteria that matter for that domain, keep the pick/substitute/mise-en-place shape, and add a bullet to the [Index](#index). Link it from the README's *Awesome libraries* section.
+## Pre-commit hooks
+
+Run linters/formatters on staged files before a commit lands.
+
+**Profile:** fast (parallel) · polyglot / no language lock-in · single config · minimal runtime deps · small supply-chain surface.
+
+These two aren't substitutes — they answer different questions. **Lefthook runs *your* commands fast; prek runs *the community's* hooks fast.** Pick by whether you want to own the toolchain or consume a catalog.
+
+| Tool | Use it when | Mise en place |
+|------|-------------|---------------|
+| [**Lefthook**](https://github.com/evilmartians/lefthook) | You want to run **your own toolchain** (ruff, eslint, cargo…) fast, with a small attack surface (local commands) and a stable 1.0+ API. | Commit `lefthook.yml`; run `lefthook install` in setup; gate with `glob` + `{staged_files}`. |
+| [**prek**](https://github.com/j178/prek) | You want the **pre-commit community catalog** (secret/lint/scan hooks) — Rust drop-in, reads `.pre-commit-config.yaml`, 4–10× faster than `pre-commit`, no Python. | Drop in `.pre-commit-config.yaml` (reuses existing pre-commit config unchanged); pin the version — pre-1.0, breaking changes between minors. |
+
+For a pure-Node shop that wants the default instead, [husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged) is fine. Watch [hk](https://github.com/jdx/hk) (Rust) — file-level locking guards against parallel-fixer races.
+
+---
+
+## Linters & formatters
+
+Catch bugs and enforce style — ideally one fast tool, not five.
+
+**Profile:** fast · consolidated (fewer tools) · clean single config · good defaults.
+
+The 2026 trend is **consolidation** — one Rust tool replacing a pile of them (Ruff, oxlint/Biome). Java is the exception: still a multi-tool JVM stack. Note two things stay *separate* concerns: a **type checker** (Python) and **type-aware lint rules** (TS).
+
+| Language | Linter | Formatter | Mise en place |
+|----------|--------|-----------|---------------|
+| **Python** | [**Ruff**](https://github.com/astral-sh/ruff) (replaces flake8 + isort + pyupgrade…) | **Ruff** (same binary, ~99.9% Black-compatible) | `ruff check` + `ruff format`, one config in `pyproject.toml`. Add a type checker (mypy, or Astral's [`ty`](https://github.com/astral-sh/ty) — beta) and [Bandit](https://github.com/PyCQA/bandit) in CI for framework security. No plugin system — custom rules need Rust. |
+| **JS / TS** | [**oxlint**](https://github.com/oxc-project/oxc) (fast pre-pass) **+ [ESLint](https://eslint.org/)** for the long tail | [**Biome**](https://biomejs.dev/) (or [Prettier](https://prettier.io/)) | Run oxlint first; keep [typescript-eslint](https://typescript-eslint.io/) for 100%-correct **type-aware** rules until oxlint's `--type-aware` (tsgolint) stabilizes. Biome formatter is ~97% Prettier-compatible. |
+| **Java** | [**Error Prone**](https://errorprone.info/) + [**NullAway**](https://github.com/uber/NullAway) (+ [Checkstyle](https://checkstyle.org/), optional) | [**Spotless**](https://github.com/diffplug/spotless) → [Palantir Java Format](https://github.com/palantir/palantir-java-format) | Spotless `apply` (Palantir engine) + `ratchet` for changed files; Error Prone + NullAway with [JSpecify](https://jspecify.dev/) annotations. Tune Error Prone severity or it floods. Checkstyle only for non-format rules. |
+| **Rust** | [**Clippy**](https://doc.rust-lang.org/clippy/) | [**rustfmt**](https://github.com/rust-lang/rustfmt) | `cargo clippy --all-targets --all-features -- -D warnings`; set levels in `[lints.clippy]` (pedantic = warn, `priority = -1`). Add [cargo-deny](https://github.com/EmbarkStudios/cargo-deny) for advisories/licenses. Pin the toolchain — new lints break green builds. |
+
+> **Single-vendor note:** Ruff, `ty`, and `uv` are all by Astral (acquired by OpenAI in 2026). Tools stay open source and forkable, but it concentrates Python tooling under one vendor.
+
+---
+
+> **Adding an index?** Append a new `##` section here, open it with a one-line **Profile** of the criteria that matter for that domain, keep a consistent shape (pick/substitute/mise-en-place, or a domain-appropriate variant like linter/formatter), and add a bullet to the [Index](#index). Link it from the README's *Awesome libraries* section.

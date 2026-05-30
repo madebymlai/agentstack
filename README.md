@@ -79,6 +79,8 @@ One opinionated pick per job — the boring choice that ships, not the trendy on
 
 - [**Logging**](docs/awesome-libraries.md#logging) — structured, low-overhead logging that plays nice with tracing
 - [**Transcribers**](docs/awesome-libraries.md#transcribers) — hands-free agent prompting by voice
+- [**Pre-commit hooks**](docs/awesome-libraries.md#pre-commit-hooks) — fast, polyglot gates before a commit lands
+- [**Linters & formatters**](docs/awesome-libraries.md#linters--formatters) — one fast tool to catch bugs and enforce style
 
 ## Candidates
 
