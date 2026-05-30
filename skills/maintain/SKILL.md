@@ -33,7 +33,7 @@ Scan the project root for marker files → languages to provision:
 - `pyproject.toml` / `requirements.txt` / `Pipfile` → Python
 - `go.mod` → Go
 - `pom.xml` / `build.gradle[.kts]` → Java
-- `pubspec.yaml` → Dart/Flutter
+- `pubspec.yaml` → Flutter if it declares `sdk: flutter` / `environment: flutter:`, else plain Dart (different SDK — see recipes)
 - `package.json` → Node (runtime already in the base image; deps via
   copyToWorktree — usually nothing to add)
 
