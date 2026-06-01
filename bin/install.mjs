@@ -12,9 +12,9 @@ import {
   setupBeadsForProject,
   installPi,
   disablePiSkills,
+  installDustcastle,
 } from './tool-installers.mjs';
 import { setupSandcastleForProject } from './sandcastle-setup.mjs';
-import { setupDustcastle } from './dustcastle-setup.mjs';
 import { setupProject } from './project-setup.mjs';
 import { installCliCommands } from './cli.mjs';
 import {
@@ -89,9 +89,10 @@ async function main() {
   disablePiSkills();
 
   // dustcastle — global Nix-store agent-sandbox runner (Linux only; macOS/Windows use per-project
-  // sandcastle behind `--project`). Installs globally and picks the shared pi model.
+  // sandcastle behind `--project`). Install only — the agent model is picked lazily by the first
+  // interactive `dustcastle run` when none is set (no point prompting here, pi isn't authed yet).
   if (process.platform === 'linux') {
-    await setupDustcastle();
+    installDustcastle();
   }
 
   // afk and friends — bare shell commands served onto PATH
