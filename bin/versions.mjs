@@ -18,6 +18,22 @@ export function getInstalledVersion(binName) {
   return null;
 }
 
+// Globally-installed npm package version, or null. Used for tools whose CLI has no
+// `--version` (so getInstalledVersion can't detect them) — we ask npm directly.
+export function getGlobalPackageVersion(pkg) {
+  try {
+    const output = execSync(`npm ls -g ${pkg} --depth=0`, {
+      encoding: 'utf8',
+      timeout: 10000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const match = output.match(/@(\d+\.\d+\.\d+)/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
 export function getNpmLatestVersion(pkg) {
   try {
     return execSync(`npm view ${pkg} version`, {

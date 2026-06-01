@@ -7,9 +7,8 @@
 // is left to the project (e.g. its own Containerfile, a base image, or a future mechanism).
 
 import { execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync, copyFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { tmpdir } from 'node:os';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { getInstalledVersion, getNpmLatestVersion } from './versions.mjs';
 import { singleSelect } from './tui.mjs';
 
@@ -38,7 +37,7 @@ function getPiModels() {
   }
 }
 
-export async function setupSandcastleForProject({ rebuild = false, clean = false } = {}) {
+export async function setupSandcastleForProject() {
   if (!getInstalledVersion('pi')) {
     console.log('  pi: not installed, skipping sandcastle init (run `npx agentstack` first to install globally)');
     return;
@@ -49,8 +48,8 @@ export async function setupSandcastleForProject({ rebuild = false, clean = false
   const scVer = getNpmLatestVersion('@ai-hero/sandcastle');
   console.log(`  sandcastle ${scVer || 'latest'} installed`);
 
-  if (existsSync('.sandcastle') && !rebuild) {
-    console.log('  sandcastle: .sandcastle/ already exists, skipping init');
+  if (existsSync('.sandcastle')) {
+    console.log('  sandcastle: .sandcastle/ already exists, skipping init (delete it to re-scaffold)');
   } else {
     const modelsByProvider = getPiModels();
     if (!modelsByProvider.size) {
@@ -72,27 +71,15 @@ export async function setupSandcastleForProject({ rebuild = false, clean = false
 
     const selectedModel = await singleSelect('Which model?', models);
 
-    // Wipe only after interactive selection succeeds, so an aborted prompt leaves .sandcastle/ intact.
-    // CODING_STANDARDS.md is preserved across the rebuild (it's typically customized per project)
-    // unless --clean opts into a full wipe.
-    let standardsBackup = null;
-    if (rebuild && existsSync('.sandcastle')) {
-      if (!clean) standardsBackup = backupCodingStandards();
-      rmSync('.sandcastle', { recursive: true, force: true });
-      console.log(`  sandcastle: removed .sandcastle/ for rebuild${clean ? ' (clean: regenerating CODING_STANDARDS.md)' : ''}`);
-    }
-
-    const initCmd = `npx @ai-hero/sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox podman`;
+    // sandcastle 0.7.0+ exposes a flag for every init prompt, so the whole scaffold runs
+    // non-interactively. --build-image false because we build explicitly below
+    // (buildSandcastleImage) to keep the overall flow deterministic.
+    const initCmd = `npx @ai-hero/sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox podman --issue-tracker beads --install-template-deps true --build-image false`;
     console.log(`  ${initCmd}`);
-    // init offers to build the image; decline it, since we build it explicitly below so the
-    // overall flow stays deterministic and non-interactive.
-    console.log("  Decline init's build prompt; the image is built right after.");
     execSync(initCmd, { stdio: 'inherit' });
 
     rewriteSandcastleMain();
     buildSandcastleImage();
-
-    if (standardsBackup) restoreCodingStandards(standardsBackup);
   }
 
   rewriteSandcastlePlanPrompt();
@@ -100,8 +87,8 @@ export async function setupSandcastleForProject({ rebuild = false, clean = false
   rewriteSandcastleMergePrompt();
 }
 
-// Build the podman image after init. sandcastle only offers to build during `init` (which we
-// decline to keep the flow non-interactive), so build it explicitly here. Failure is non-fatal:
+// Build the podman image after init. init's own build is suppressed (--build-image false keeps
+// the flow non-interactive), so build it explicitly here. Failure is non-fatal:
 // .sandcastle/ is already set up, so we warn and let the user build manually.
 function buildSandcastleImage() {
   const cmd = 'npx @ai-hero/sandcastle podman build-image';
@@ -112,26 +99,6 @@ function buildSandcastleImage() {
   } catch (err) {
     console.log(`  sandcastle: image build failed — run \`${cmd}\` manually once podman is ready (${err.message})`);
   }
-}
-
-const CODING_STANDARDS_FILE = 'CODING_STANDARDS.md';
-
-function backupCodingStandards() {
-  const src = resolve('.sandcastle', CODING_STANDARDS_FILE);
-  if (!existsSync(src)) {
-    console.log(`  sandcastle: no ${CODING_STANDARDS_FILE} to preserve`);
-    return null;
-  }
-  const backupPath = resolve(mkdtempSync(resolve(tmpdir(), 'agentstack-standards-')), CODING_STANDARDS_FILE);
-  copyFileSync(src, backupPath);
-  console.log(`  sandcastle: preserved ${CODING_STANDARDS_FILE} → ${backupPath}`);
-  return backupPath;
-}
-
-function restoreCodingStandards(backupPath) {
-  copyFileSync(backupPath, resolve('.sandcastle', CODING_STANDARDS_FILE));
-  rmSync(dirname(backupPath), { recursive: true, force: true });
-  console.log(`  sandcastle: restored preserved ${CODING_STANDARDS_FILE} after init`);
 }
 
 // Patch the generated main.ts: mount ~/.pi/agent (agent auth/config) into every sandbox, and

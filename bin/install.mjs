@@ -14,6 +14,7 @@ import {
   disablePiSkills,
 } from './tool-installers.mjs';
 import { setupSandcastleForProject } from './sandcastle-setup.mjs';
+import { setupDustcastle } from './dustcastle-setup.mjs';
 import { setupProject } from './project-setup.mjs';
 import { installCliCommands } from './cli.mjs';
 import {
@@ -28,8 +29,6 @@ import {
 async function main() {
   const args = process.argv.slice(2);
   const projectOnly = args.includes('--project') || args.includes('-p');
-  const rebuild = ['--rebuild', '-r', '-rc'].some(f => args.includes(f));
-  const clean = args.includes('--clean') || args.includes('-rc');
   const selectedByFlags = toolsFromFlags(args);
 
   if (projectOnly) {
@@ -38,12 +37,13 @@ async function main() {
       console.log('Not a git repository. Run from a git repo root.');
       process.exit(1);
     }
-    if (clean && !rebuild) {
-      console.log('  Note: --clean has no effect without --rebuild');
-    }
     setupProject();
     setupBeadsForProject();
-    await setupSandcastleForProject({ rebuild, clean });
+    // sandcastle scaffolds per-project on macOS/Windows. Linux uses dustcastle, which is global
+    // (set up by `npx agentstack`) and needs no per-project step.
+    if (process.platform !== 'linux') {
+      await setupSandcastleForProject();
+    }
     console.log('\nDone.');
     return;
   }
@@ -84,9 +84,15 @@ async function main() {
   // beads (bd) issue tracker — binary only; project init lives behind -p
   await installBeads();
 
-  // pi (pi-coding-agent) — cheap executor for sandcastle tasks
+  // pi (pi-coding-agent) — cheap executor for sandcastle/dustcastle tasks
   installPi();
   disablePiSkills();
+
+  // dustcastle — global Nix-store agent-sandbox runner (Linux only; macOS/Windows use per-project
+  // sandcastle behind `--project`). Installs globally and picks the shared pi model.
+  if (process.platform === 'linux') {
+    await setupDustcastle();
+  }
 
   // afk and friends — bare shell commands served onto PATH
   installCliCommands();

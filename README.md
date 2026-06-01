@@ -25,12 +25,12 @@ Project setup only (AGENTS.md, CLAUDE.md, `.git/info/exclude` — tool flags ign
 npx github:madebymlai/agentstack --project
 ```
 
-Re-run `sandcastle init` from scratch by wiping `.sandcastle/` first. Your customized `.sandcastle/CODING_STANDARDS.md` is preserved across the rebuild by default; add `--clean` for a full wipe that regenerates it from the template too:
+The sandbox runner is **platform-specific**:
 
-```bash
-npx github:madebymlai/agentstack --project --rebuild           # or -r; wipe .sandcastle/ and re-init, keeping CODING_STANDARDS.md
-npx github:madebymlai/agentstack --project --rebuild --clean   # or -rc; full wipe, including CODING_STANDARDS.md
-```
+- **macOS / Windows** use [sandcastle](https://github.com/mattpocock/sandcastle), which `--project` scaffolds per-repo into `.sandcastle/`.
+- **Linux** uses [dustcastle](https://github.com/madebymlai/dustcastle), a global Nix-store runner with no per-project scaffold. It's installed and its agent model picked during the global `npx github:madebymlai/agentstack`, so there's nothing for `--project` to set up — run the loop with `dustcastle run`.
+
+On macOS/Windows, `--project` skips init when `.sandcastle/` already exists — delete it and re-run to scaffold from scratch.
 
 ## afk
 
@@ -41,7 +41,7 @@ afk            # runs npx tsx .sandcastle/main.ts in the current project
 afk --foo bar  # extra args are forwarded to the run
 ```
 
-It launches the sandcastle parallel-planner loop so you can step away from the keyboard. If `.sandcastle/` hasn't been set up yet, it fails fast and points you at `npx github:madebymlai/agentstack --project`.
+It launches the sandcastle parallel-planner loop so you can step away from the keyboard. If `.sandcastle/` hasn't been set up yet, it fails fast and points you at `npx github:madebymlai/agentstack --project`. `afk` is the sandcastle (macOS/Windows) entrypoint; on **Linux**, run the dustcastle loop directly with `dustcastle run`.
 
 ## What it does
 
@@ -53,8 +53,9 @@ Prompts you to pick the agents you use (Claude Code, Codex, OpenCode), then inst
 | [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge-graph MCP server for navigating the codebase |
 | [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated, reusable agent skills |
 | [**beads**](https://github.com/gastownhall/beads) | Dependency-aware `bd` issue tracker |
-| [**pi**](https://github.com/earendil-works/pi-mono) | Minimal coding agent, the default sandcastle executor |
-| [**sandcastle**](https://github.com/mattpocock/sandcastle) | Sandboxed agent orchestration |
+| [**pi**](https://github.com/earendil-works/pi-mono) | Minimal coding agent, the default sandcastle/dustcastle executor |
+| [**sandcastle**](https://github.com/mattpocock/sandcastle) | Sandboxed agent orchestration (macOS/Windows) |
+| [**dustcastle**](https://github.com/madebymlai/dustcastle) | Sandboxed agent orchestration over a shared Nix store (Linux) |
 | [**AGENTS.md**](https://agents.md/) | Shared principles and conventions for every agent |
 | [**.git/info/exclude**](https://git-scm.com/docs/gitignore) | Local-only ignores for agent config files |
 
