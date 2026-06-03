@@ -74,7 +74,7 @@ export async function setupSandcastleForProject() {
     // sandcastle 0.7.0+ exposes a flag for every init prompt, so the whole scaffold runs
     // non-interactively. --build-image false because we build explicitly below
     // (buildSandcastleImage) to keep the overall flow deterministic.
-    const initCmd = `npx @ai-hero/sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox podman --issue-tracker beads --install-template-deps true --build-image false`;
+    const initCmd = `npx @ai-hero/sandcastle init --agent pi --model ${JSON.stringify(selectedModel)} --template parallel-planner-with-review --sandbox docker --issue-tracker beads --install-template-deps true --build-image false`;
     console.log(`  ${initCmd}`);
     execSync(initCmd, { stdio: 'inherit' });
 
@@ -87,17 +87,18 @@ export async function setupSandcastleForProject() {
   rewriteSandcastleMergePrompt();
 }
 
-// Build the podman image after init. init's own build is suppressed (--build-image false keeps
-// the flow non-interactive), so build it explicitly here. Failure is non-fatal:
-// .sandcastle/ is already set up, so we warn and let the user build manually.
+// Build the docker image after init. init's own build is suppressed (--build-image false keeps
+// the flow non-interactive), so build it explicitly here — the docker build-image command applies
+// the UID/GID build-args automatically. Failure is non-fatal: .sandcastle/ is already set up, so
+// we warn and let the user build manually.
 function buildSandcastleImage() {
-  const cmd = 'npx @ai-hero/sandcastle podman build-image';
+  const cmd = 'npx @ai-hero/sandcastle docker build-image';
   console.log(`  ${cmd}`);
   try {
     execSync(cmd, { stdio: 'inherit' });
-    console.log('  sandcastle: podman image built');
+    console.log('  sandcastle: docker image built');
   } catch (err) {
-    console.log(`  sandcastle: image build failed — run \`${cmd}\` manually once podman is ready (${err.message})`);
+    console.log(`  sandcastle: image build failed — run \`${cmd}\` manually once docker is ready (${err.message})`);
   }
 }
 
@@ -115,8 +116,8 @@ function rewriteSandcastleMain() {
 
   // Mount ~/.pi/agent for agent auth/config in every sandbox.
   content = content.replaceAll(
-    'podman()',
-    'podman({ mounts: [{ hostPath: "~/.pi/agent", sandboxPath: "~/.pi/agent" }] })',
+    'docker()',
+    'docker({ mounts: [{ hostPath: "~/.pi/agent", sandboxPath: "~/.pi/agent" }] })',
   );
 
   // Copy .beads/ into each worktree alongside node_modules. Stealth mode git-excludes .beads,

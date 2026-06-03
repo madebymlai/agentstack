@@ -131,14 +131,14 @@ needs a *different* runtime (e.g. Bun) — install it system-wide like the other
 
 ```bash
 # 1. rebuild from the patched Containerfile
-npx @ai-hero/sandcastle podman build-image
+npx @ai-hero/sandcastle docker build-image
 
 # 2. confirm the toolchain resolves for the agent user (image tag = sandcastle:<project>)
-podman run --rm --entrypoint cargo  sandcastle:<project> --version
-podman run --rm --entrypoint python sandcastle:<project> --version
+docker run --rm --entrypoint cargo  sandcastle:<project> --version
+docker run --rm --entrypoint python sandcastle:<project> --version
 
 # 3. (optional) run the project's tests in the container — should pass offline
-podman run --rm -v "$PWD:/home/agent/workspace" -w /home/agent/workspace \
+docker run --rm -v "$PWD:/home/agent/workspace" -w /home/agent/workspace \
   --entrypoint sh sandcastle:<project> -c 'cargo test'   # or pytest / go test / mvn test
 ```
 

@@ -6,7 +6,7 @@ argument-hint: ""
 
 <purpose>
 Provision toolchains and dependencies at IMAGE BUILD TIME by editing
-`.sandcastle/Containerfile`, so the agent running inside the sandcastle podman
+`.sandcastle/Containerfile`, so the agent running inside the sandcastle docker
 sandbox can run the project's tests reliably — no slow, timeout-prone runtime
 installs, and deps are baked into bounded image layers.
 </purpose>
@@ -25,7 +25,7 @@ installs, and deps are baked into bounded image layers.
   only insert before the USER line.
 - Always rebuild when done. Containerfile edits do nothing until the image is
   rebuilt, and sandcastle never auto-rebuilds — so the final action is always
-  `npx @ai-hero/sandcastle podman build-image`. Never finish on an edit alone.
+  `npx @ai-hero/sandcastle docker build-image`. Never finish on an edit alone.
 </rules>
 
 <phase name="detect">
@@ -61,7 +61,7 @@ Reuse the existing `ARG AGENT_UID/AGENT_GID` already declared above the USER lin
 <phase name="build">
 ALWAYS run, as the final step, so the edits take effect:
 
-    npx @ai-hero/sandcastle podman build-image
+    npx @ai-hero/sandcastle docker build-image
 
 This is mandatory, not optional — a patched Containerfile has zero effect until
 the image is rebuilt, and sandcastle does not rebuild on its own. Wait for it to
@@ -72,7 +72,7 @@ do not leave a half-patched, unbuilt Containerfile.
 <phase name="verify">
 After the build succeeds, smoke-test in the sandbox — see
 [RECIPES.md](RECIPES.md#verify):
-1. `podman run --rm --entrypoint <tool> sandcastle:<image> --version` confirms
+1. `docker run --rm --entrypoint <tool> sandcastle:<image> --version` confirms
    the toolchain resolves for the agent user.
 2. If it's quick, run the project's test command in the container and confirm it
    passes offline (the deps were pre-fetched).
