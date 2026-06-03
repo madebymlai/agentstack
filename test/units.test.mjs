@@ -16,6 +16,7 @@ import {
 import { postInstallCommands, verifySha256Checksum } from '../bin/binary-install.mjs';
 import { resolveSandcastleMain, buildAfkCommand } from '../bin/afk.mjs';
 import { renderLauncher, installCliCommands } from '../bin/cli.mjs';
+import { ensureCodeDiscovery } from '../bin/project-setup.mjs';
 
 function withTempDir(fn) {
   const dir = mkdtempSync(resolve(tmpdir(), 'agentstack-test-'));
@@ -269,5 +270,29 @@ test('installCliCommands: copies entry to dataDir and writes a launcher on PATH'
     const launcher = resolve(binDir, 'afk');
     assert.deepEqual(written, [launcher]);
     assert.match(readFileSync(launcher, 'utf8'), new RegExp(`node "${resolve(dataDir, 'afk.mjs')}"`));
+  });
+});
+
+// ---- project-setup.mjs ----
+
+test('ensureCodeDiscovery appends a <code-discovery> block and refreshes in place', () => {
+  withTempDir((dir) => {
+    const claudeMd = join(dir, 'CLAUDE.md');
+    writeFileSync(claudeMd, '@AGENTS.md\n');
+
+    const origLog = console.log;
+    console.log = () => {};
+    try {
+      ensureCodeDiscovery(claudeMd);
+      ensureCodeDiscovery(claudeMd); // re-run must replace, not duplicate
+    } finally {
+      console.log = origLog;
+    }
+
+    const content = readFileSync(claudeMd, 'utf8');
+    assert.ok(content.startsWith('@AGENTS.md'));
+    assert.match(content, /codebase-memory-mcp/);
+    assert.equal(content.split('<code-discovery>').length - 1, 1);
+    assert.equal(content.split('</code-discovery>').length - 1, 1);
   });
 });

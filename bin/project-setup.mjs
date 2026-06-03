@@ -47,6 +47,33 @@ export function ensureEsmPackageJson() {
   }
 }
 
+const CODE_DISCOVERY_START = '<code-discovery>';
+const CODE_DISCOVERY_END = '</code-discovery>';
+
+// Append (or refresh) the codebase-memory code-discovery guidance as a
+// <code-discovery> ... </code-discovery> block in the project's CLAUDE.md. The
+// tags bound an agentstack-managed region, so re-running setup replaces the
+// block in place instead of duplicating it.
+export function ensureCodeDiscovery(claudeMdPath = 'CLAUDE.md') {
+  const text = readFileSync(resolve(__dir, 'code-discovery.txt'), 'utf8').trim();
+  const block = `${CODE_DISCOVERY_START}\n${text}\n${CODE_DISCOVERY_END}\n`;
+  const existing = existsSync(claudeMdPath) ? readFileSync(claudeMdPath, 'utf8') : '';
+
+  const start = existing.indexOf(CODE_DISCOVERY_START);
+  const end = existing.indexOf(CODE_DISCOVERY_END, start + 1);
+  if (start !== -1 && end !== -1) {
+    const before = existing.slice(0, start);
+    const after = existing.slice(end + CODE_DISCOVERY_END.length).replace(/^\n/, '');
+    writeFileSync(claudeMdPath, before + block + after);
+    console.log(`  ${claudeMdPath}: refreshed <code-discovery> block`);
+    return;
+  }
+
+  const gap = existing === '' || existing.endsWith('\n\n') ? '' : existing.endsWith('\n') ? '\n' : '\n\n';
+  writeFileSync(claudeMdPath, existing + gap + block);
+  console.log(`  ${claudeMdPath}: added <code-discovery> block`);
+}
+
 export function setupProject() {
   ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json', '.beads/', '.beads-credential-key']);
   ensureEsmPackageJson();
@@ -61,4 +88,6 @@ export function setupProject() {
     writeFileSync('CLAUDE.md', '@AGENTS.md\n');
     console.log('  Created CLAUDE.md (references @AGENTS.md)');
   }
+
+  ensureCodeDiscovery();
 }
