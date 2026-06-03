@@ -1,8 +1,8 @@
-# Principles Catalog
+# Design Catalog
 
 Pre-implementation design decisions that require judgment — not mechanically checkable.
 
-→ Destination: `AGENTS.md`
+→ Destination: `AGENTS.md` (# Design Principles section)
 
 ## Module Design
 
@@ -43,6 +43,14 @@ Pre-implementation design decisions that require judgment — not mechanically c
 - **No Primitive Obsession** — Represent domain concepts as named types rather than raw strings, numbers, or booleans. A customer ID is not a string; a price is not a float.
   > Pick when: functions accept raw strings/ints that represent domain concepts, type signatures don't distinguish between an email and a username, or invalid values pass type checks silently.
 
+## Robustness
+
+- **Define Errors Out of Existence** — Design APIs so that routine edge cases are not errors at all (return empty, clamp, no-op) rather than pushing exceptions onto every caller.
+  > Pick when: callers must wrap ordinary calls in try/catch for non-exceptional cases, the same null/empty special-case is repeated everywhere, or an "error" is really just an uninteresting boundary condition.
+
+- **No Defensive Garbage** — Trust established preconditions and module contracts; let violated invariants surface as immediate failures instead of masking them with silent fallbacks.
+  > Pick when: null checks and default fallbacks mask upstream bugs, defensive code hides the real source of errors, or functions silently return wrong results instead of failing.
+
 ### Sources
 
 - [SRP](https://web.archive.org/web/20150924054349/http://www.objectmentor.com/resources/articles/Principles_and_Patterns.pdf) — Robert C. Martin, "Design Principles and Design Patterns" (2000)
@@ -56,3 +64,5 @@ Pre-implementation design decisions that require judgment — not mechanically c
 - [YAGNI](https://en.wikipedia.org/wiki/You_aren%27t_gonna_need_it) — Ron Jeffries, Extreme Programming (1999)
 - [Forward-First](https://en.wikipedia.org/wiki/Forward_compatibility) — general engineering principle
 - [No Primitive Obsession](https://wiki.c2.com/?PrimitiveObsession) — Martin Fowler, "Refactoring" (1999)
+- [Define Errors Out of Existence](https://web.stanford.edu/~ouster/cgi-bin/aposd.php) — John Ousterhout, "A Philosophy of Software Design" (2018)
+- [No Defensive Garbage](https://wiki.c2.com/?OffensiveProgramming) — Offensive Programming, c2 wiki
