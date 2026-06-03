@@ -243,7 +243,7 @@ const MATTPOCOCK_SKILLS = [
   // productivity
   'caveman', 'grill-me', 'handoff', 'write-a-skill',
   // in-progress
-  'review',
+  'review', 'teach',
 ];
 
 export function installMattpocockSkills(tools) {
