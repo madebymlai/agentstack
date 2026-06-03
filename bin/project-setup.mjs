@@ -75,7 +75,7 @@ export function ensureCodeDiscovery(claudeMdPath = 'CLAUDE.md') {
 }
 
 export function setupProject() {
-  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', '.mcp.json', '.beads/', '.beads-credential-key']);
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', 'CODING_STANDARDS.md', '.mcp.json', '.beads/', '.beads-credential-key']);
   ensureEsmPackageJson();
 
   if (!existsSync('AGENTS.md')) {
