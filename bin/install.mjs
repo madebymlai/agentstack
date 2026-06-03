@@ -24,6 +24,7 @@ import {
   ensureBypassPermissions,
   installBundledSkills,
   installMattpocockSkills,
+  installDustcastleSkills,
 } from './tools.mjs';
 
 async function main() {
@@ -80,6 +81,9 @@ async function main() {
 
   // External skills (mattpocock/skills)
   installMattpocockSkills(tools);
+
+  // External skills (dustcastle-maintained: coding-standards)
+  installDustcastleSkills(tools);
 
   // beads (bd) issue tracker — binary only; project init lives behind -p
   await installBeads();

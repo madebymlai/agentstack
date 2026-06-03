@@ -245,3 +245,19 @@ export function installMattpocockSkills(tools) {
     throw err;
   }
 }
+
+export function installDustcastleSkills(tools) {
+  const agents = tools.map(t => TOOLS[t].agentName).filter(Boolean);
+  if (!agents.length) return;
+
+  console.log('\nInstalling dustcastle skills...');
+  const agentArgs = agents.flatMap(a => ['-a', a]);
+  const args = ['skills@latest', 'add', 'madebymlai/dustcastle', '-g', '--skill', 'coding-standards', '-y', ...agentArgs];
+  try {
+    execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
+  } catch (err) {
+    if (err.stdout) process.stdout.write(err.stdout);
+    if (err.stderr) process.stderr.write(err.stderr);
+    throw err;
+  }
+}
