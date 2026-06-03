@@ -135,15 +135,12 @@ test('toolsFromFlags: returns selected tools in TOOL_OPTIONS order', () => {
 
 test('adapter config paths and metadata', { skip: process.platform === 'win32' }, () => {
   assert.ok(TOOLS.claude.mcpConfigPath().endsWith('/.claude.json'));
-  assert.ok(TOOLS.claude.skillsDir().endsWith('/.claude/skills'));
   assert.equal(TOOLS.claude.agentName, 'claude-code');
 
   assert.ok(TOOLS.codex.mcpConfigPath().endsWith('/.codex/config.toml'));
-  assert.ok(TOOLS.codex.skillsDir().endsWith('/.codex/skills'));
   assert.equal(TOOLS.codex.agentName, 'codex');
 
   assert.ok(TOOLS.opencode.mcpConfigPath().endsWith('/.config/opencode/opencode.json'));
-  assert.ok(TOOLS.opencode.skillsDir().endsWith('/.config/opencode/skills'));
   assert.equal(TOOLS.opencode.agentName, 'opencode');
 });
 

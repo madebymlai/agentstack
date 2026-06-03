@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, mkdirSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, rmSync, mkdirSync } from 'node:fs';
 import { resolve, join, delimiter } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
@@ -14,7 +14,6 @@ import {
   getShellProfile,
 } from '../bin/platform.mjs';
 import { postInstallCommands, verifySha256Checksum } from '../bin/binary-install.mjs';
-import { copyDirMerge } from '../bin/fs-util.mjs';
 import { resolveSandcastleMain, buildAfkCommand } from '../bin/afk.mjs';
 import { renderLauncher, installCliCommands } from '../bin/cli.mjs';
 
@@ -182,30 +181,6 @@ test('verifySha256Checksum: passes for a matching digest, throws otherwise', () 
     const junkSum = resolve(dir, 'junk.sha256');
     writeFileSync(junkSum, 'not-a-checksum\n');
     assert.throws(() => verifySha256Checksum(file, junkSum, 'asset.bin'), /Invalid SHA256 checksum file/);
-  });
-});
-
-// ---- fs-util.mjs ----
-
-test('copyDirMerge: copies recursively and respects overwrite', () => {
-  withTempDir((root) => {
-    const src = resolve(root, 'src');
-    const dest = resolve(root, 'dest');
-    mkdirSync(resolve(src, 'nested'), { recursive: true });
-    writeFileSync(resolve(src, 'top.txt'), 'SRC-top');
-    writeFileSync(resolve(src, 'nested', 'deep.txt'), 'SRC-deep');
-
-    // pre-existing dest file that should survive overwrite:false
-    mkdirSync(dest, { recursive: true });
-    writeFileSync(resolve(dest, 'top.txt'), 'DEST-top');
-
-    copyDirMerge(src, dest, { overwrite: false });
-    assert.equal(readFileSync(resolve(dest, 'top.txt'), 'utf8'), 'DEST-top'); // not overwritten
-    assert.equal(readFileSync(resolve(dest, 'nested', 'deep.txt'), 'utf8'), 'SRC-deep'); // new file copied
-
-    copyDirMerge(src, dest, { overwrite: true });
-    assert.equal(readFileSync(resolve(dest, 'top.txt'), 'utf8'), 'SRC-top'); // now overwritten
-    assert.ok(existsSync(resolve(dest, 'nested', 'deep.txt')));
   });
 });
 

@@ -2,7 +2,6 @@ import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getInstalledVersion } from './versions.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
@@ -53,10 +52,7 @@ export function setupProject() {
   ensureEsmPackageJson();
 
   if (!existsSync('AGENTS.md')) {
-    let template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');
-    if (getInstalledVersion('tokf')) {
-      template = `# tokf\n\n🗜️ means this output was compressed by tokf.\nRun \`tokf raw last\` to see the full uncompressed output of the last command.\n\n${template}`;
-    }
+    const template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');
     writeFileSync('AGENTS.md', template);
     console.log('  Created AGENTS.md');
   }

@@ -5,15 +5,11 @@
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve, dirname, win32 } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
 
 import { getOpencodeConfigDir } from './platform.mjs';
-import { copyDirMerge } from './fs-util.mjs';
 import { hasConcreteEnvValue, concreteEnvEntries, resolveEnvPlaceholders } from './mcp-env.mjs';
 import { upsertMcpServer } from './codex-config.mjs';
-
-const __dir = dirname(fileURLToPath(import.meta.url));
 
 function codexConfigDir() {
   return process.platform === 'win32'
@@ -105,7 +101,6 @@ export const TOOLS = {
     flag: '--claude',
     agentName: 'claude-code',
     mcpConfigPath: () => resolve(homedir(), '.claude.json'),
-    skillsDir: () => resolve(homedir(), '.claude', 'skills'),
     mergeMcp(name, entry) {
       mergeClaudeMcp(name, entry, this.mcpConfigPath());
     },
@@ -136,7 +131,6 @@ export const TOOLS = {
     flag: '--codex',
     agentName: 'codex',
     mcpConfigPath: () => resolve(codexConfigDir(), 'config.toml'),
-    skillsDir: () => resolve(homedir(), '.codex', 'skills'),
     mergeMcp(name, entry) {
       mergeCodexMcp(name, entry, this.mcpConfigPath());
     },
@@ -167,7 +161,6 @@ export const TOOLS = {
     flag: '--opencode',
     agentName: 'opencode',
     mcpConfigPath: () => resolve(getOpencodeConfigDir(), 'opencode.json'),
-    skillsDir: () => resolve(getOpencodeConfigDir(), 'skills'),
     mergeMcp(name, entry) {
       mergeOpencodeMcp(name, entry, this.mcpConfigPath());
     },
@@ -219,14 +212,24 @@ export function ensureBypassPermissions(tools) {
 }
 
 export function installBundledSkills(tools) {
-  console.log('\nInstalling agentstack skills...');
-  const srcDir = resolve(__dir, '..', 'skills');
-  if (!existsSync(srcDir)) return;
+  const agents = tools.map(t => TOOLS[t].agentName).filter(Boolean);
+  if (!agents.length) return;
 
-  for (const tool of tools) {
-    const destDir = TOOLS[tool].skillsDir();
-    copyDirMerge(srcDir, destDir, { overwrite: true });
-    console.log(`  ${tool}: ${destDir}`);
+  // maintain patches .sandcastle/Containerfile, so it belongs only to the sandcastle
+  // path (macOS/Windows). Linux uses dustcastle, which has no Containerfile.
+  const skills = ['beads', 'design-principles'];
+  if (process.platform !== 'linux') skills.push('maintain');
+
+  console.log('\nInstalling agentstack skills...');
+  const agentArgs = agents.flatMap(a => ['-a', a]);
+  const skillArgs = skills.flatMap(s => ['--skill', s]);
+  const args = ['skills@latest', 'add', 'madebymlai/agentstack', '-g', ...skillArgs, '-y', ...agentArgs];
+  try {
+    execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
+  } catch (err) {
+    if (err.stdout) process.stdout.write(err.stdout);
+    if (err.stderr) process.stderr.write(err.stderr);
+    throw err;
   }
 }
 

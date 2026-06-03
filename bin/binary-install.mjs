@@ -1,8 +1,8 @@
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { resolve, delimiter } from 'node:path';
-import { homedir, tmpdir } from 'node:os';
+import { tmpdir } from 'node:os';
 import { httpsGetJson, getGithubLatestTag } from './net.mjs';
 import { getInstalledVersion } from './versions.mjs';
 import { detectTarget, detectPlatform, envWithInstallerBinOnPath } from './platform.mjs';
@@ -161,34 +161,9 @@ export function runPostInstall(name, server, tools = []) {
   const cmds = postInstallCommands(pi, tools);
   if (!cmds?.length) return;
 
-  // Back up settings.json before postInstall (tokf hook installs may overwrite PreToolUse)
-  const settingsPath = resolve(homedir(), '.claude', 'settings.json');
-  let settingsBefore = null;
-  if (existsSync(settingsPath)) {
-    settingsBefore = JSON.parse(readFileSync(settingsPath, 'utf8'));
-  }
-
   console.log(`Configuring ${name}...`);
   for (const cmd of cmds) {
     execSync(cmd, { stdio: 'inherit', env: envWithInstallerBinOnPath() });
-  }
-
-  // Restore any PreToolUse hooks that tokf may have overwritten
-  if (settingsBefore?.hooks?.PreToolUse && existsSync(settingsPath)) {
-    const settingsAfter = JSON.parse(readFileSync(settingsPath, 'utf8'));
-    const beforeEntries = settingsBefore.hooks.PreToolUse;
-    const afterEntries = settingsAfter.hooks?.PreToolUse || [];
-    const afterMatchers = new Set(afterEntries.map(e => e.matcher));
-    const merged = [
-      ...afterEntries,
-      ...beforeEntries.filter(e => !afterMatchers.has(e.matcher)),
-    ];
-    settingsAfter.hooks ??= {};
-    settingsAfter.hooks.PreToolUse = merged;
-    writeFileSync(settingsPath, JSON.stringify(settingsAfter, null, 2) + '\n');
-    if (merged.length > afterEntries.length) {
-      console.log(`  Restored ${merged.length - afterEntries.length} existing PreToolUse hook(s).`);
-    }
   }
 
   console.log(`  Configuration applied.`);

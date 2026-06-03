@@ -49,7 +49,6 @@ Prompts you to pick the agents you use (Claude Code, Codex, OpenCode), then inst
 
 | Tool | Description |
 |------|-------------|
-| [**tokf**](https://github.com/mpecan/tokf) | Compresses noisy command output to save tokens |
 | [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge-graph MCP server for navigating the codebase |
 | [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated, reusable agent skills |
 | [**beads**](https://github.com/gastownhall/beads) | Dependency-aware `bd` issue tracker |
@@ -62,13 +61,6 @@ Prompts you to pick the agents you use (Claude Code, Codex, OpenCode), then inst
 ## Built-in skills
 
 Bundled skills installed globally for every selected tool.
-
-### /agentstack
-
-Drives an interactive Q&A — propose, you accept or reject. If `tokf` is installed, you choose principles, filters, or both; otherwise it runs principles-only:
-
-- **Principles** — probes the codebase (languages, frameworks, anti-patterns) and proposes additions; writes accepted ones to AGENTS.md's `# Principles` section
-- **tokf filters** — runs `tokf discover` to find noisy commands, falls back to scanning build scripts (package.json, Makefile, justfile, pyproject.toml, etc.); writes per-command filters under `.tokf/filters/` or rewrites to `.tokf/rewrites.toml`
 
 ### /beads
 
@@ -99,3 +91,4 @@ Tools being considered for future inclusion. These are not installed today.
 | Usage reports | [**ccusage**](https://github.com/ryoppippi/ccusage) | Mature Claude Code usage analyzer with daily, monthly, session, and 5-hour billing-window reports | Optional |
 | Repo packing | [**Repomix**](https://github.com/yamadashy/repomix) | Packs local or remote repos into AI-friendly output with token counts, security checks, compression, and MCP mode | Docs only |
 | AI dev workflow | [**compound-engineering**](https://github.com/EveryInc/compound-engineering-plugin) | Plugin for Claude / Codex / OpenCode with brainstorm, plan, review, commit, PR, debug workflows; superseded here by mattpocock/skills | Replaced |
+| Token reduction | [**tokf**](https://github.com/mpecan/tokf) | Compresses noisy command output to save tokens | Removed |
