@@ -233,13 +233,27 @@ export function installBundledSkills(tools) {
   }
 }
 
+// Curated mattpocock/skills, installed by name (not by subfolder path) so the
+// set survives the author moving skills between category folders. Everything
+// under engineering + productivity, plus review.
+const MATTPOCOCK_SKILLS = [
+  // engineering
+  'diagnose', 'grill-with-docs', 'improve-codebase-architecture', 'prototype',
+  'setup-matt-pocock-skills', 'tdd', 'to-issues', 'to-prd', 'triage', 'zoom-out',
+  // productivity
+  'caveman', 'grill-me', 'handoff', 'write-a-skill',
+  // in-progress
+  'review',
+];
+
 export function installMattpocockSkills(tools) {
   const agents = tools.map(t => TOOLS[t].agentName).filter(Boolean);
   if (!agents.length) return;
 
   console.log('\nInstalling mattpocock/skills...');
   const agentArgs = agents.flatMap(a => ['-a', a]);
-  const args = ['skills@latest', 'add', 'mattpocock/skills', '-g', '--skill', '*', '-y', ...agentArgs];
+  const skillArgs = MATTPOCOCK_SKILLS.flatMap(s => ['--skill', s]);
+  const args = ['skills@latest', 'add', 'mattpocock/skills', '-g', ...skillArgs, '-y', ...agentArgs];
   try {
     execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
   } catch (err) {
