@@ -28,7 +28,7 @@ npx github:madebymlai/agentstack --project
 The sandbox runner is **platform-specific**:
 
 - **macOS / Windows** use [sandcastle](https://github.com/mattpocock/sandcastle), which `--project` scaffolds per-repo into `.sandcastle/`.
-- **Linux** uses [dustcastle](https://github.com/madebymlai/dustcastle), a global Nix-store runner installed during the global `npx github:madebymlai/agentstack`. It has no per-project scaffold, so `--project` does nothing extra — run the loop with `dustcastle run`, which prompts for the agent model on first use (or set it anytime with `dustcastle model`).
+- **Linux** uses [dustcastle](https://github.com/madebymlai/dustcastle), a global Nix-store runner installed during the global `npx github:madebymlai/agentstack`. It has no per-project scaffold, so `--project` does nothing extra — run the loop with `dustcastle run`, which prompts for the agent model on first use (or set it anytime with `dustcastle config`).
 
 On macOS/Windows, `--project` skips init when `.sandcastle/` already exists — delete it and re-run to scaffold from scratch.
 
