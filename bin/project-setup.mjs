@@ -32,21 +32,6 @@ export function ensureGitExclude(entries) {
   console.log(`  Added ${missing.join(', ')} to ${excludePath}`);
 }
 
-export function ensureEsmPackageJson() {
-  const pkgPath = resolve('.', 'package.json');
-  if (existsSync(pkgPath)) {
-    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-    if (!pkg.type) {
-      pkg.type = 'module';
-      writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-      console.log('  package.json: added "type": "module"');
-    }
-  } else {
-    writeFileSync(pkgPath, JSON.stringify({ type: 'module' }, null, 2) + '\n');
-    console.log('  package.json: created with "type": "module"');
-  }
-}
-
 const CODE_DISCOVERY_START = '<code-discovery>';
 const CODE_DISCOVERY_END = '</code-discovery>';
 
@@ -75,8 +60,7 @@ export function ensureCodeDiscovery(claudeMdPath = 'CLAUDE.md') {
 }
 
 export function setupProject() {
-  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'package.json', 'package-lock.json', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', 'CODING_STANDARDS.md', '.mcp.json', '.beads/', '.beads-credential-key']);
-  ensureEsmPackageJson();
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', 'CODING_STANDARDS.md', '.mcp.json', '.beads/', '.beads-credential-key']);
 
   if (!existsSync('AGENTS.md')) {
     const template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');
