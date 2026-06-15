@@ -4,10 +4,17 @@
 
   - Run `bd prime` for workflow context and command guidance.
   - Use `bd ready`, `bd show <id>`, `bd update <id> --claim`, and `bd close <id>`.
-  - Use `bd remember "insight"` for persistent project memory; do not create MEMORY.md files.
   - Use `bd dep add <blocked> --blocked-by <blocker>` for building dependecies trees across issues.
-  - Do not use markdown TODO lists for task tracking.
-  - `/to-prd` must create the PRD issue with `--type=epic`. Epics are containers — implement their children, not the epic itself.
+  - `/to-prd` must create the PRD issue with `--type=epic`. Epics are containers; Implement their children (`/to-issues`), not the epic itself.
+
+# ADR management
+
+  Use bd --type=decision for ADR management. ADR's live here, not in local files
+
+  - Create an ADR with `bd create --type=decision` (alias `--type=adr`).
+  - Write the record in `--description` using the standard sections: Context, Decision, Consequences, Alternatives considered. Use `--design`/`--notes` for supplementary detail.
+  - Reverse a decision by superseding it: `bd supersede <old-id> --with <new-id>` - Keep the why-we-changed-our-mind trail intact.
+  - Find ADRs with `bd list --type=decision`, `bd search <keyword>`, and `bd show <id>`.
 
 # Triage labels
 
@@ -26,6 +33,6 @@ Five **state** roles:
 
 # Domain docs
 
-Domain language and terminology defined in `CONTEXT.md` (or `CONTEXT-MAP.md`) the repo root.
+Domain language and terminology defined in `CONTEXT.md` (or `CONTEXT-MAP.md`) of the repo root.
 
 # Workflow
