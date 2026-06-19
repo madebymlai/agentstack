@@ -236,16 +236,18 @@ export function installBundledSkills(tools) {
 }
 
 // Curated mattpocock/skills, installed by name (not by subfolder path) so the
-// set survives the author moving skills between category folders. Everything
-// under engineering + productivity, plus review.
+// set survives the author moving skills between category folders. Engineering +
+// productivity, plus review — minus teach and setup-matt-pocock-skills (the
+// latter is a redundant bootstrapper since we install these already).
 const MATTPOCOCK_SKILLS = [
   // engineering
-  'diagnose', 'grill-with-docs', 'improve-codebase-architecture', 'prototype',
-  'setup-matt-pocock-skills', 'tdd', 'to-issues', 'to-prd', 'triage', 'zoom-out',
+  'ask-matt', 'codebase-design', 'diagnosing-bugs', 'domain-modeling',
+  'grill-with-docs', 'implement', 'improve-codebase-architecture', 'prototype',
+  'resolving-merge-conflicts', 'tdd', 'to-issues', 'to-prd', 'triage',
   // productivity
-  'caveman', 'grill-me', 'handoff', 'write-a-skill',
+  'grill-me', 'grilling', 'handoff', 'writing-great-skills',
   // in-progress
-  'review', 'teach',
+  'review',
 ];
 
 export function installMattpocockSkills(tools) {
