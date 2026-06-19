@@ -40,6 +40,15 @@ async function main() {
     }
     setupProject();
     setupBeadsForProject();
+
+    // Skills install for every tool — project setup is where skills land now.
+    // -p ignores tool flags, so target all adapters. The installers run without
+    // -g, so the skills CLI installs them project-local (.claude/skills, ...).
+    const allTools = TOOL_OPTIONS.map(t => t.value);
+    installBundledSkills(allTools);
+    installMattpocockSkills(allTools);
+    installDustcastleSkills(allTools);
+
     // sandcastle scaffolds per-project on macOS/Windows. Linux uses dustcastle, which is global
     // (set up by `npx agentstack`) and needs no per-project step.
     if (process.platform !== 'linux') {
@@ -75,15 +84,6 @@ async function main() {
     mergeMcpConfig(name, server, tools);
     console.log(`\n${name}: done`);
   }
-
-  // Bundled agentstack skills
-  installBundledSkills(tools);
-
-  // External skills (mattpocock/skills)
-  installMattpocockSkills(tools);
-
-  // External skills (dustcastle-maintained: coding-standards)
-  installDustcastleSkills(tools);
 
   // beads (bd) issue tracker — binary only; project init lives behind -p
   await installBeads();

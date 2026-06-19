@@ -19,7 +19,7 @@ npx github:madebymlai/agentstack --claude --codex
 npx github:madebymlai/agentstack --opencode
 ```
 
-Project setup only (AGENTS.md, CLAUDE.md, `.git/info/exclude` — tool flags ignored):
+Project setup only (AGENTS.md, CLAUDE.md, `.git/info/exclude`, skills — tool flags ignored; skills install project-local for every tool):
 
 ```bash
 npx github:madebymlai/agentstack --project
@@ -60,7 +60,7 @@ Prompts you to pick the agents you use (Claude Code, Codex, OpenCode), then inst
 
 ## Built-in skills
 
-Bundled skills installed globally for every selected tool.
+Bundled skills installed into the project (per-tool `.claude/skills`, `.codex/skills`, `.opencode/skills`) for every tool during project setup (`--project`). These dirs are local-only via `.git/info/exclude`.
 
 ### /beads
 

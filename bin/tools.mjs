@@ -223,7 +223,9 @@ export function installBundledSkills(tools) {
   console.log('\nInstalling agentstack skills...');
   const agentArgs = agents.flatMap(a => ['-a', a]);
   const skillArgs = skills.flatMap(s => ['--skill', s]);
-  const args = ['skills@latest', 'add', 'madebymlai/agentstack', '-g', ...skillArgs, '-y', ...agentArgs];
+  // No -g: the skills CLI auto-detects project scope and installs into the
+  // project's per-agent skill dirs (.claude/skills, .codex/skills, ...).
+  const args = ['skills@latest', 'add', 'madebymlai/agentstack', ...skillArgs, '-y', ...agentArgs];
   try {
     execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
   } catch (err) {
@@ -253,7 +255,8 @@ export function installMattpocockSkills(tools) {
   console.log('\nInstalling mattpocock/skills...');
   const agentArgs = agents.flatMap(a => ['-a', a]);
   const skillArgs = MATTPOCOCK_SKILLS.flatMap(s => ['--skill', s]);
-  const args = ['skills@latest', 'add', 'mattpocock/skills', '-g', ...skillArgs, '-y', ...agentArgs];
+  // No -g: install project-local (see installBundledSkills).
+  const args = ['skills@latest', 'add', 'mattpocock/skills', ...skillArgs, '-y', ...agentArgs];
   try {
     execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
   } catch (err) {
@@ -269,7 +272,8 @@ export function installDustcastleSkills(tools) {
 
   console.log('\nInstalling dustcastle skills...');
   const agentArgs = agents.flatMap(a => ['-a', a]);
-  const args = ['skills@latest', 'add', 'madebymlai/dustcastle', '-g', '--skill', 'coding-standards', '-y', ...agentArgs];
+  // No -g: install project-local (see installBundledSkills).
+  const args = ['skills@latest', 'add', 'madebymlai/dustcastle', '--skill', 'coding-standards', '-y', ...agentArgs];
   try {
     execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
   } catch (err) {
