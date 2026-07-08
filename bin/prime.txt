@@ -27,7 +27,7 @@ Lifecycle:
 
 Specs and planning:
 - Use `/grilling` or `/wayfinder` to clarify direction, then `/to-spec` -> `/to-tickets` -> `/implement` -> `/code-review`.
-- `/wayfinder` maps are Beads epics: create the map with `--type=epic --labels wayfinder:map`; create tickets as children with `wayfinder:<type>` labels; wire blockers with `bd dep add <blocked> <blocker>`.
+- `/wayfinder` maps are Beads epics: create the map with `--type=epic --labels wayfinder:map`; create tickets as children with `--labels wayfinder:<type>`;
 - `/to-spec` must create the spec issue with `--type=epic`.
 - Epics are containers; implement their child tickets from `/to-tickets`, not the epic itself.
 
