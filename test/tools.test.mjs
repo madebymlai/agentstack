@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -14,6 +15,7 @@ import {
   mergeOpencodeMcp,
   mergeCodexMcp,
   bundledSkillsForPlatform,
+  MATTPOCOCK_SKILLS,
 } from '../bin/tools.mjs';
 
 function withTempDir(fn) {
@@ -144,6 +146,48 @@ test('bundledSkillsForPlatform: includes coding standards from agentstack', () =
     'coding-standards',
     'maintain',
   ]);
+});
+
+test('MATTPOCOCK_SKILLS: installs from the live skills CLI', { timeout: 120_000 }, () => {
+  withTempDir((dir) => {
+    const args = [
+      '-y',
+      'skills@latest',
+      'add',
+      'mattpocock/skills',
+      ...MATTPOCOCK_SKILLS.flatMap(s => ['--skill', s]),
+      '-y',
+      '-a',
+      'codex',
+    ];
+    const result = spawnSync('npx', args, {
+      cwd: dir,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1', NO_COLOR: '1' },
+      timeout: 120_000,
+    });
+
+    assert.equal(
+      result.status,
+      0,
+      `skills CLI failed\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+    );
+    const installedSkills = readdirSync(resolve(dir, '.agents', 'skills')).sort();
+    const expectedSkills = [...MATTPOCOCK_SKILLS].sort();
+    const missingSkills = expectedSkills.filter(skill => !installedSkills.includes(skill));
+    const unexpectedSkills = installedSkills.filter(skill => !expectedSkills.includes(skill));
+
+    assert.deepEqual(
+      missingSkills,
+      [],
+      `skills CLI did not install these curated skills: ${missingSkills.join(', ')}`,
+    );
+    assert.deepEqual(
+      unexpectedSkills,
+      [],
+      `skills CLI installed unexpected skills: ${unexpectedSkills.join(', ')}`,
+    );
+  });
 });
 
 // ---- tools.mjs: adapter paths ----

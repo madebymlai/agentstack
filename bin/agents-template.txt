@@ -1,38 +1,9 @@
-# Issue tracker
+# Workflow
 
-  Use bd (beads) for issue tracking.
+Use `bd` (Beads Issue Tracker) to track specs, ADRs, and issues.
 
-  - Run `bd prime` for workflow context and command guidance.
-  - Use `bd ready`, `bd show <id>`, `bd update <id> --claim`, and `bd close <id>`.
-  - Use `bd dep add <blocked> --blocked-by <blocker>` for building dependecies trees across issues.
-  - `/to-prd` must create the PRD issue with `--type=epic`. Epics are containers; Implement their children (`/to-issues`), not the epic itself.
-
-# ADR management
-
-  Use bd --type=decision for ADR management. ADR's live here, not in local files
-
-  - Create an ADR with `bd create --type=decision` (alias `--type=adr`).
-  - Write the record in `--description` using the standard sections: Context, Decision, Consequences, Alternatives considered. Use `--design`/`--notes` for supplementary detail.
-  - Reverse a decision by superseding it: `bd supersede <old-id> --with <new-id>` - Keep the why-we-changed-our-mind trail intact.
-  - Find ADRs with `bd list --type=decision`, `bd search <keyword>`, and `bd show <id>`.
-
-# Triage labels
-
-Two **category** roles:
-
- - `bug` — something is broken
- - `enhancement` — new feature or improvement
-
-Five **state** roles:
-
- - `needs-triage` — maintainer needs to evaluate
- - `needs-info` — waiting on reporter
- - `ready-for-agent` — fully specified, AFK-ready (an agent can pick it up with no human context)
- - `ready-for-human` — needs human implementation
- - `wontfix` — will not be actioned
+At the start of every session, run `bd prime`; it returns the live Beads workflow for this repository, including the current rules for specs, ADRs, and issues.
 
 # Domain docs
 
-Domain language and terminology defined in `CONTEXT.md` (or `CONTEXT-MAP.md`) of the repo root.
-
-# Workflow
+Domain language and terminology defined in `CONTEXT.md` (or `CONTEXT-MAP.md`) of the repo root as local-only documentation.
