@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, readdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, win32 } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { hasConcreteEnvValue, concreteEnvEntries, resolveEnvPlaceholders } from '../bin/mcp-env.mjs';
@@ -17,6 +17,7 @@ import {
   bundledSkillsForPlatform,
   MATTPOCOCK_SKILLS,
 } from '../bin/tools.mjs';
+import { getBeadsConfigDir, installBeadsPrime } from '../bin/tool-installers.mjs';
 
 function withTempDir(fn) {
   const dir = mkdtempSync(resolve(tmpdir(), 'agentstack-tools-test-'));
@@ -187,6 +188,46 @@ test('MATTPOCOCK_SKILLS: installs from the live skills CLI', { timeout: 120_000 
       [],
       `skills CLI installed unexpected skills: ${unexpectedSkills.join(', ')}`,
     );
+  });
+});
+
+test('getBeadsConfigDir: follows OS user config locations', () => {
+  withTempDir((dir) => {
+    const home = resolve(dir, 'home');
+
+    assert.equal(
+      getBeadsConfigDir({ platform: 'linux', home, env: {} }),
+      resolve(home, '.config', 'beads'),
+    );
+    assert.equal(
+      getBeadsConfigDir({ platform: 'linux', home, env: { XDG_CONFIG_HOME: resolve(dir, 'xdg') } }),
+      resolve(dir, 'xdg', 'beads'),
+    );
+    assert.equal(
+      getBeadsConfigDir({ platform: 'darwin', home, env: {} }),
+      resolve(home, 'Library', 'Application Support', 'beads'),
+    );
+    assert.equal(
+      getBeadsConfigDir({
+        platform: 'win32',
+        home: 'C:\\Users\\agent',
+        env: { APPDATA: 'C:\\Users\\agent\\AppData\\Roaming' },
+      }),
+      win32.join('C:\\Users\\agent\\AppData\\Roaming', 'beads'),
+    );
+  });
+});
+
+test('installBeadsPrime: copies PRIME.md into the beads config dir', () => {
+  withTempDir((dir) => {
+    const sourcePath = resolve(dir, 'prime.txt');
+    const configDir = resolve(dir, 'config', 'beads');
+    writeFileSync(sourcePath, '# Beads\n\nTest prime.\n');
+
+    const targetPath = quiet(() => installBeadsPrime({ configDir, sourcePath }));
+
+    assert.equal(targetPath, resolve(configDir, 'PRIME.md'));
+    assert.equal(readFileSync(targetPath, 'utf8'), '# Beads\n\nTest prime.\n');
   });
 });
 

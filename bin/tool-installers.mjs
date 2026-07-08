@@ -1,9 +1,12 @@
 import { execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { copyFileSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { dirname, resolve, win32 } from 'node:path';
 import { homedir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 import { getInstalledVersion, getNpmLatestVersion } from './versions.mjs';
 import { getGithubLatestTag } from './net.mjs';
+
+const __dir = dirname(fileURLToPath(import.meta.url));
 
 export async function installBeads() {
   const installed = getInstalledVersion('bd');
@@ -22,6 +25,32 @@ export async function installBeads() {
   } else {
     execSync('curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash', { stdio: 'inherit', shell: '/bin/bash' });
   }
+}
+
+export function getBeadsConfigDir({
+  env = process.env,
+  home = homedir(),
+  platform = process.platform,
+} = {}) {
+  if (platform === 'win32') {
+    const appData = env.APPDATA || win32.join(home, 'AppData', 'Roaming');
+    return win32.join(appData, 'beads');
+  }
+  if (platform === 'darwin') {
+    return resolve(home, 'Library', 'Application Support', 'beads');
+  }
+  return resolve(env.XDG_CONFIG_HOME || resolve(home, '.config'), 'beads');
+}
+
+export function installBeadsPrime({
+  configDir = getBeadsConfigDir(),
+  sourcePath = resolve(__dir, 'prime.txt'),
+} = {}) {
+  const targetPath = resolve(configDir, 'PRIME.md');
+  mkdirSync(configDir, { recursive: true });
+  copyFileSync(sourcePath, targetPath);
+  console.log(`  beads: installed PRIME.md to ${targetPath}`);
+  return targetPath;
 }
 
 export function setupBeadsForProject() {

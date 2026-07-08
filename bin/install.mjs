@@ -9,6 +9,7 @@ import { installBinary, runPostInstall } from './binary-install.mjs';
 import { multiSelect } from './tui.mjs';
 import {
   installBeads,
+  installBeadsPrime,
   setupBeadsForProject,
   installPi,
   disablePiSkills,
@@ -77,6 +78,7 @@ async function main() {
 
   // beads (bd) issue tracker — binary only; project init lives behind -p
   await installBeads();
+  installBeadsPrime();
 
   // pi (pi-coding-agent) — cheap executor for agent tasks
   installPi();

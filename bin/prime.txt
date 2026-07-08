@@ -1,0 +1,40 @@
+# Beads
+
+For existing work, use this order: `bd ready` -> `bd show <id>` -> `bd update <id> --claim` -> work -> `bd close <id>`.
+For creating dependency trees across issues, create child beads with `--parent <parent-id>`, then wire blockers with `bd dep add <blocked> <blocker>`; parent links group work, dependency links control execution order; verify with `bd children <id> --pretty`.
+
+Essential commands:
+```bash
+bd create --title="Summary of this issue" --description="Why this issue exists and what needs to be done" --type=task|bug|feature --priority=2
+bd create --title="Child task" --description="Why this child exists" --type=task --parent <parent-id>
+bd update <id> --title="..." --description="..." --notes="..." --design="..."
+bd close <id> --reason="explanation"
+bd dep add <issue> <depends-on>
+```
+Priority is `0-4` or `P0-P4`; lower numbers mean higher priority.
+
+Useful checks:
+```bash
+bd list --status=open
+bd list --status=in_progress
+bd blocked
+bd search <keyword>
+bd dep tree <id> --direction=both
+bd children <epic-id> --pretty
+```
+Lifecycle:
+- `bd supersede <id> --with=<new-id>` marks an issue as replaced by newer work.
+
+Specs and planning:
+- Use `/grilling` or `/wayfinder` to clarify direction, then `/to-spec` -> `/to-tickets` -> `/implement` -> `/code-review`.
+- `/wayfinder` maps are Beads epics: create the map with `--type=epic --labels wayfinder:map`; create tickets as children with `wayfinder:<type>` labels; wire blockers with `bd dep add <blocked> <blocker>`.
+- `/to-spec` must create the spec issue with `--type=epic`.
+- Epics are containers; implement their child tickets from `/to-tickets`, not the epic itself.
+
+ADR management:
+- Use `--type=decision` issues for ADR management. ADRs live here, not in local files.
+- Write the record in `--description` using the standard sections: Context, Decision, Consequences, Alternatives considered. Use `--design`/`--notes` for supplementary detail.
+- Reverse a decision by superseding it: `bd supersede <old-id> --with <new-id>`.
+- Find ADRs with `bd list --type=decision`, `bd search <keyword>`, and `bd show <id>`.
+
+Rules: use `--json` when parsing output; never use `bd edit`; only mutate or close beads for work actually completed.
