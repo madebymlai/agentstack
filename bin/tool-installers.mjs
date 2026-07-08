@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { homedir } from 'node:os';
-import { getInstalledVersion, getNpmLatestVersion, getGlobalPackageVersion } from './versions.mjs';
+import { getInstalledVersion, getNpmLatestVersion } from './versions.mjs';
 import { getGithubLatestTag } from './net.mjs';
 
 export async function installBeads() {
@@ -50,24 +50,6 @@ export function installPi() {
     console.log(`\npi not found; installing ${latest || 'latest'}...`);
   }
   execSync('npm install -g --loglevel=error @earendil-works/pi-coding-agent', { stdio: 'inherit' });
-}
-
-// dustcastle is the global, Nix-store-based agent-sandbox runner used on Linux (the per-project
-// sandcastle scaffold is kept only on macOS/Windows). Its CLI has no `--version`, so detect the
-// installed version via npm rather than getInstalledVersion.
-export function installDustcastle() {
-  const installed = getGlobalPackageVersion('dustcastle');
-  const latest = getNpmLatestVersion('dustcastle');
-  if (installed && (!latest || installed === latest)) {
-    console.log(`\n  dustcastle ${installed} is up to date`);
-    return;
-  }
-  if (installed) {
-    console.log(`\ndustcastle ${installed} found; installing ${latest}...`);
-  } else {
-    console.log(`\ndustcastle not found; installing ${latest || 'latest'}...`);
-  }
-  execSync('npm install -g --loglevel=error dustcastle', { stdio: 'inherit' });
 }
 
 export function disablePiSkills() {

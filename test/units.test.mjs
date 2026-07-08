@@ -214,7 +214,7 @@ test('resolveSandcastleMain: falls back to main.mts', () => {
 
 test('resolveSandcastleMain: throws with setup guidance when .sandcastle is missing', () => {
   withTempDir((dir) => {
-    assert.throws(() => resolveSandcastleMain(dir), /agentstack --project/);
+    assert.throws(() => resolveSandcastleMain(dir), /Set up sandcastle/);
   });
 });
 

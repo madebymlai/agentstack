@@ -12,9 +12,7 @@ import {
   setupBeadsForProject,
   installPi,
   disablePiSkills,
-  installDustcastle,
 } from './tool-installers.mjs';
-import { setupSandcastleForProject } from './sandcastle-setup.mjs';
 import { setupProject } from './project-setup.mjs';
 import { installCliCommands } from './cli.mjs';
 import {
@@ -24,7 +22,6 @@ import {
   ensureBypassPermissions,
   installBundledSkills,
   installMattpocockSkills,
-  installDustcastleSkills,
 } from './tools.mjs';
 
 async function main() {
@@ -47,13 +44,6 @@ async function main() {
     const allTools = TOOL_OPTIONS.map(t => t.value);
     installBundledSkills(allTools);
     installMattpocockSkills(allTools);
-    installDustcastleSkills(allTools);
-
-    // sandcastle scaffolds per-project on macOS/Windows. Linux uses dustcastle, which is global
-    // (set up by `npx agentstack`) and needs no per-project step.
-    if (process.platform !== 'linux') {
-      await setupSandcastleForProject();
-    }
     console.log('\nDone.');
     return;
   }
@@ -88,16 +78,9 @@ async function main() {
   // beads (bd) issue tracker — binary only; project init lives behind -p
   await installBeads();
 
-  // pi (pi-coding-agent) — cheap executor for sandcastle/dustcastle tasks
+  // pi (pi-coding-agent) — cheap executor for agent tasks
   installPi();
   disablePiSkills();
-
-  // dustcastle — global Nix-store agent-sandbox runner (Linux only; macOS/Windows use per-project
-  // sandcastle behind `--project`). Install only — the agent model is picked lazily by the first
-  // interactive `dustcastle run` when none is set (no point prompting here, pi isn't authed yet).
-  if (process.platform === 'linux') {
-    installDustcastle();
-  }
 
   // afk and friends — bare shell commands served onto PATH
   installCliCommands();

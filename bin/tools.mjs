@@ -215,10 +215,7 @@ export function installBundledSkills(tools) {
   const agents = tools.map(t => TOOLS[t].agentName).filter(Boolean);
   if (!agents.length) return;
 
-  // maintain patches .sandcastle/Containerfile, so it belongs only to the sandcastle
-  // path (macOS/Windows). Linux uses dustcastle, which has no Containerfile.
-  const skills = ['beads', 'design-principles'];
-  if (process.platform !== 'linux') skills.push('maintain');
+  const skills = bundledSkillsForPlatform();
 
   console.log('\nInstalling agentstack skills...');
   const agentArgs = agents.flatMap(a => ['-a', a]);
@@ -233,6 +230,12 @@ export function installBundledSkills(tools) {
     if (err.stderr) process.stderr.write(err.stderr);
     throw err;
   }
+}
+
+export function bundledSkillsForPlatform(platform = process.platform) {
+  const skills = ['beads', 'design-principles', 'coding-standards'];
+  if (platform !== 'linux') skills.push('maintain');
+  return skills;
 }
 
 // Curated mattpocock/skills, installed by name (not by subfolder path) so the
@@ -259,23 +262,6 @@ export function installMattpocockSkills(tools) {
   const skillArgs = MATTPOCOCK_SKILLS.flatMap(s => ['--skill', s]);
   // No -g: install project-local (see installBundledSkills).
   const args = ['skills@latest', 'add', 'mattpocock/skills', ...skillArgs, '-y', ...agentArgs];
-  try {
-    execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
-  } catch (err) {
-    if (err.stdout) process.stdout.write(err.stdout);
-    if (err.stderr) process.stderr.write(err.stderr);
-    throw err;
-  }
-}
-
-export function installDustcastleSkills(tools) {
-  const agents = tools.map(t => TOOLS[t].agentName).filter(Boolean);
-  if (!agents.length) return;
-
-  console.log('\nInstalling dustcastle skills...');
-  const agentArgs = agents.flatMap(a => ['-a', a]);
-  // No -g: install project-local (see installBundledSkills).
-  const args = ['skills@latest', 'add', 'madebymlai/dustcastle', '--skill', 'coding-standards', '-y', ...agentArgs];
   try {
     execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
   } catch (err) {

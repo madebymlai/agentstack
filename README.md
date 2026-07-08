@@ -19,29 +19,22 @@ npx github:madebymlai/agentstack --claude --codex
 npx github:madebymlai/agentstack --opencode
 ```
 
-Project setup only (AGENTS.md, CLAUDE.md, `.git/info/exclude`, skills — tool flags ignored; skills install project-local for every tool):
+Project setup only (AGENTS.md, CLAUDE.md, `.git/info/exclude`, project-local skills, beads init when available — tool flags ignored):
 
 ```bash
 npx github:madebymlai/agentstack --project
 ```
 
-The sandbox runner is **platform-specific**:
-
-- **macOS / Windows** use [sandcastle](https://github.com/mattpocock/sandcastle), which `--project` scaffolds per-repo into `.sandcastle/`.
-- **Linux** uses [dustcastle](https://github.com/madebymlai/dustcastle), a global Nix-store runner installed during the global `npx github:madebymlai/agentstack`. It has no per-project scaffold, so `--project` does nothing extra — run the loop with `dustcastle run`, which prompts for the agent model on first use (or set it anytime with `dustcastle config`).
-
-On macOS/Windows, `--project` skips init when `.sandcastle/` already exists — delete it and re-run to scaffold from scratch.
-
 ## afk
 
-Once installed, `afk` is a bare shell command (served onto your PATH with per-OS launchers — POSIX `sh` on Linux/macOS, `.cmd` on Windows). Run it from a project that has been set up with `--project`:
+Once installed, `afk` is a bare shell command (served onto your PATH with per-OS launchers — POSIX `sh` on Linux/macOS, `.cmd` on Windows). It is a compatibility wrapper for projects that already have a `.sandcastle/main.ts` or `.sandcastle/main.mts` entrypoint:
 
 ```bash
 afk            # runs npx tsx .sandcastle/main.ts in the current project
 afk --foo bar  # extra args are forwarded to the run
 ```
 
-It launches the sandcastle parallel-planner loop so you can step away from the keyboard. If `.sandcastle/` hasn't been set up yet, it fails fast and points you at `npx github:madebymlai/agentstack --project`. `afk` is the sandcastle (macOS/Windows) entrypoint; on **Linux**, run the dustcastle loop directly with `dustcastle run`.
+It launches the existing sandcastle entrypoint. agentstack no longer installs dustcastle or scaffolds sandcastle.
 
 ## What it does
 
@@ -52,9 +45,7 @@ Prompts you to pick the agents you use (Claude Code, Codex, OpenCode), then inst
 | [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge-graph MCP server for navigating the codebase |
 | [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated, reusable agent skills |
 | [**beads**](https://github.com/gastownhall/beads) | Dependency-aware `bd` issue tracker |
-| [**pi**](https://github.com/earendil-works/pi-mono) | Minimal coding agent, the default sandcastle/dustcastle executor |
-| [**sandcastle**](https://github.com/mattpocock/sandcastle) | Sandboxed agent orchestration (macOS/Windows) |
-| [**dustcastle**](https://github.com/madebymlai/dustcastle) | Sandboxed agent orchestration over a shared Nix store (Linux) |
+| [**pi**](https://github.com/earendil-works/pi-mono) | Minimal coding agent for lightweight execution workflows |
 | [**AGENTS.md**](https://agents.md/) | Shared principles and conventions for every agent |
 | [**.git/info/exclude**](https://git-scm.com/docs/gitignore) | Local-only ignores for agent config files |
 
@@ -65,6 +56,10 @@ Bundled skills installed into the project (per-tool `.claude/skills`, `.codex/sk
 ### /beads
 
 Workflow guide for repositories using [beads](https://github.com/gastownhall/beads) as the shared task tracker. Tells agents to use `bd` (not markdown TODOs) for ready-work discovery, atomic claiming, dependency-aware follow-ups, and durable handoff across sessions or contributors.
+
+### /coding-standards
+
+Interactive writer for `CODING_STANDARDS.md`. Helps agents select concrete style and testing rules from curated catalogs so review can enforce them without spending implementation context.
 
 ## [Awesome libraries](docs/awesome-libraries.md)
 

@@ -11,13 +11,13 @@ const MAIN_CANDIDATES = ['main.ts', 'main.mts'];
 
 // Locate the sandcastle entry file under <cwd>/.sandcastle and return its
 // project-relative path (e.g. ".sandcastle/main.ts"). Throws with guidance
-// when sandcastle has not been set up yet — fail fast at the interface.
+// when sandcastle has not been set up yet.
 export function resolveSandcastleMain(cwd = process.cwd()) {
   const dir = resolve(cwd, '.sandcastle');
   const found = MAIN_CANDIDATES.find(f => existsSync(resolve(dir, f)));
   if (!found) {
     throw new Error(
-      'No .sandcastle/main.ts found. Run `npx agentstack --project` to set up sandcastle first.',
+      'No .sandcastle/main.ts found. Set up sandcastle for this project before running afk.',
     );
   }
   return join('.sandcastle', found);

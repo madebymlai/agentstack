@@ -13,6 +13,7 @@ import {
   mergeClaudeMcp,
   mergeOpencodeMcp,
   mergeCodexMcp,
+  bundledSkillsForPlatform,
 } from '../bin/tools.mjs';
 
 function withTempDir(fn) {
@@ -129,6 +130,20 @@ test('toolsFromFlags: returns selected tools in TOOL_OPTIONS order', () => {
   assert.deepEqual(toolsFromFlags(['--claude', '--codex', '--opencode']), ['claude', 'codex', 'opencode']);
   assert.deepEqual(toolsFromFlags([]), []);
   assert.deepEqual(toolsFromFlags(['--unknown']), []);
+});
+
+test('bundledSkillsForPlatform: includes coding standards from agentstack', () => {
+  assert.deepEqual(bundledSkillsForPlatform('linux'), [
+    'beads',
+    'design-principles',
+    'coding-standards',
+  ]);
+  assert.deepEqual(bundledSkillsForPlatform('darwin'), [
+    'beads',
+    'design-principles',
+    'coding-standards',
+    'maintain',
+  ]);
 });
 
 // ---- tools.mjs: adapter paths ----
