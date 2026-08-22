@@ -1,5 +1,5 @@
 ---
-name: gw::setup
+name: gw-setup
 description: Groundwork conventions setup — run the design-principles and coding-standards writers, either interactively or on the agent's own judgement. Use when setting up a repo's conventions from scratch, when the user asks to configure standards or principles, or when a repo has neither documented.
 ---
 
@@ -36,8 +36,8 @@ Headless is the agent's judgement, not a default set: it selects only what the c
 <phase name="run">
 Run the selected writers in this order — principles first, since design decisions frame the style rules:
 
-1. `gw::design-principles`
-2. `gw::coding-standards`
+1. `gw-design-principles`
+2. `gw-coding-standards`
 
 Load the skill's SKILL.md and follow it. Carry the chosen mode into each one:
 

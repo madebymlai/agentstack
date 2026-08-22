@@ -1,10 +1,10 @@
 ---
-name: gw::design-principles
+name: gw-design-principles
 description: Design principles writer — interactively select a project's architecture and design principles from curated catalogs and append them to AGENTS.md so they guide design decisions before implementation. Use when defining or revising design conventions, reviewing a plan against architectural principles, or when a repo has no documented design principles.
 ---
 
 <purpose>
-A design principles writer. Probe the codebase, propose principles one menu at a time, let the user accept or reject each, then append the accepted set to AGENTS.md. These are pre-implementation design decisions that require judgment — they shape how work is structured before and while it is written. Line-level coding style lives elsewhere (the `gw::coding-standards` skill / CODING_STANDARDS.md), enforced at diff-review time.
+A design principles writer. Probe the codebase, propose principles one menu at a time, let the user accept or reject each, then append the accepted set to AGENTS.md. These are pre-implementation design decisions that require judgment — they shape how work is structured before and while it is written. Line-level coding style lives elsewhere (the `gw-coding-standards` skill / CODING_STANDARDS.md), enforced at diff-review time.
 </purpose>
 
 <rules>

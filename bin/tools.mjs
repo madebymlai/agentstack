@@ -274,7 +274,7 @@ export function installBundledSkills(tools) {
 }
 
 export function bundledSkillsForPlatform() {
-  return ['gw::setup', 'gw::beads', 'gw::design-principles', 'gw::coding-standards'];
+  return ['gw-setup', 'gw-beads', 'gw-design-principles', 'gw-coding-standards'];
 }
 
 // Curated mattpocock/skills, installed by name (not by subfolder path) so the

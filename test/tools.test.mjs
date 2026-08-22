@@ -138,12 +138,12 @@ test('toolsFromFlags: returns selected tools in TOOL_OPTIONS order', () => {
   assert.deepEqual(toolsFromFlags(['--unknown']), []);
 });
 
-test('bundledSkillsForPlatform: the gw:: set, same on every platform', () => {
+test('bundledSkillsForPlatform: the gw- set, same on every platform', () => {
   assert.deepEqual(bundledSkillsForPlatform(), [
-    'gw::setup',
-    'gw::beads',
-    'gw::design-principles',
-    'gw::coding-standards',
+    'gw-setup',
+    'gw-beads',
+    'gw-design-principles',
+    'gw-coding-standards',
   ]);
 });
 

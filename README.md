@@ -52,21 +52,21 @@ npx github:madebymlai/groundwork --project
 
 ## Bundled skills
 
-Written and versioned in this repo, under [`skills/`](skills/). All four carry the `gw::` prefix so they sort together and never collide with the curated set.
+Written and versioned in this repo, under [`skills/`](skills/). All four carry the `gw-` prefix so they sort together and never collide with the curated set.
 
-### /gw::setup
+### /gw-setup
 
 Entry point for a repo's written conventions. Asks which writers to run — design principles, coding standards, or both — and whether to run them manually (menus, the user picks every item) or headlessly (the agent selects only what the codebase gives evidence for). Routes to the two writers below; decides nothing itself.
 
-### /gw::beads
+### /gw-beads
 
 Workflow guide for repositories using [beads](https://github.com/gastownhall/beads) as the shared task tracker. Tells agents to use `bd` (not markdown TODOs) for ready-work discovery, atomic claiming, dependency-aware follow-ups, and durable handoff across sessions or contributors.
 
-### /gw::design-principles
+### /gw-design-principles
 
 Interactive writer for the design section of `AGENTS.md`. Agents pick architecture and design principles from curated catalogs so the conventions are settled before implementation starts, not argued during review.
 
-### /gw::coding-standards
+### /gw-coding-standards
 
 Interactive writer for `CODING_STANDARDS.md`. Helps agents select concrete style and testing rules from curated catalogs so review can enforce them without spending implementation context.
 
