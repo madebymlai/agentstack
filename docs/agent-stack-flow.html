@@ -114,10 +114,9 @@
 
     <p class="hs-prose">The tools feed each other. <strong>beads</strong> tracks the work and its
       dependencies; an agent claims a ready issue, reads the code through
-      <strong>codebase-memory</strong>'s graph, and follows a workflow from <strong>skills</strong> —
-      while <strong>tokf</strong> keeps command output small enough to stay in context. The same
-      setup gives every selected agent the same MCP servers, skills, permissions, and
-      project conventions.</p>
+      <strong>codebase-memory</strong>'s graph, and follows a workflow from <strong>skills</strong>.
+      The same setup gives every selected agent the same MCP servers, skills, permissions,
+      and project conventions.</p>
 
     <div class="wf">
       <div class="wf-rail">
@@ -125,9 +124,7 @@
         <div class="wf-arr">&rarr;</div>
         <div class="wf-node"><div class="t">Understand</div><div class="tool">codebase-memory</div></div>
         <div class="wf-arr">&rarr;</div>
-        <div class="wf-node"><div class="t">Build</div><div class="tool">skills · tokf</div></div>
-        <div class="wf-arr">&rarr;</div>
-        <div class="wf-node"><div class="t">Run</div><div class="tool">pi</div></div>
+        <div class="wf-node"><div class="t">Build</div><div class="tool">skills</div></div>
       </div>
       <div class="wf-loop"><span class="line"></span><span>&#8635; repeats with the next ready issue</span><span class="line"></span></div>
     </div>
@@ -147,7 +144,7 @@
       <div class="num">2</div>
       <div>
         <h3>agentstack sets everything up</h3>
-        <p>It installs the tools and registers the code-graph MCP server and tokf hooks for each agent.</p>
+        <p>It installs the tools and registers the code-graph MCP server for each agent.</p>
       </div>
     </div>
     <div class="step">

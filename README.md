@@ -4,62 +4,78 @@
   </a>
 </p>
 
-See [`docs/agent-stack-flow.html`](docs/agent-stack-flow.html) for the full walkthrough of what gets installed and how the pieces fit together.
+One command to set up a coding-agent toolchain: pick the agents you use, and agentstack installs the shared binaries, points each agent's config at them, and writes the conventions every agent reads.
+
+See [`docs/agent-stack-flow.html`](docs/agent-stack-flow.html) for the full walkthrough of how the pieces fit together.
 
 ## Install
+
+Interactive — select Claude Code, Codex, and/or OpenCode:
 
 ```bash
 npx github:madebymlai/agentstack
 ```
 
-Skip the interactive selector:
+Skip the selector with per-agent flags:
 
 ```bash
 npx github:madebymlai/agentstack --claude --codex
 npx github:madebymlai/agentstack --opencode
 ```
 
-Project setup only (AGENTS.md, CLAUDE.md, `.git/info/exclude`, project-local skills, beads init when available — tool flags ignored):
+This is a machine-level run. It installs and version-checks shared binaries, then applies the settings each selected agent needs:
+
+| What | Detail |
+|------|--------|
+| [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge-graph MCP server, installed with auto-indexing enabled (`auto_index_limit 50000`) |
+| [**beads**](https://github.com/gastownhall/beads) | Dependency-aware `bd` issue tracker, plus a `PRIME.md` priming guide in the beads config dir |
+| Agent permissions | Claude Code `bypassPermissions` (and empty commit/PR attribution), Codex `approval_policy = "never"` + `sandbox_mode = "danger-full-access"`, OpenCode `permission = "allow"` |
+| Claude Code context | `CLAUDE_CODE_MAX_CONTEXT_TOKENS=240000` |
+
+Re-running is safe: every step checks the installed version or existing config first and skips what is already in place.
+
+## Project setup
+
+Run inside a git repo to write the per-project conventions and skills. Agent flags are ignored here — project setup targets every agent:
 
 ```bash
 npx github:madebymlai/agentstack --project
 ```
 
-## afk
+| What | Detail |
+|------|--------|
+| `AGENTS.md` | Shared [principles and conventions](https://agents.md/) every agent reads; created only if missing |
+| `CLAUDE.md` | A one-line `@AGENTS.md` reference, plus a `<code-discovery>` block telling agents to prefer the knowledge graph over grep |
+| `.git/info/exclude` | Local-only ignores for the agent config files above, so they never land in a commit |
+| `.beads/` | `bd init` when the binary is available |
+| Skills | Bundled and curated skills installed into `.claude/skills`, `.codex/skills`, and `.opencode/skills` |
 
-Once installed, `afk` is a bare shell command (served onto your PATH with per-OS launchers — POSIX `sh` on Linux/macOS, `.cmd` on Windows). It is a compatibility wrapper for projects that already have a `.sandcastle/main.ts` or `.sandcastle/main.mts` entrypoint:
+## Bundled skills
 
-```bash
-afk            # runs npx tsx .sandcastle/main.ts in the current project
-afk --foo bar  # extra args are forwarded to the run
-```
-
-It launches the existing sandcastle entrypoint. agentstack no longer installs dustcastle or scaffolds sandcastle.
-
-## What it does
-
-Prompts you to pick the agents you use (Claude Code, Codex, OpenCode), then installs and configures each of these for them:
-
-| Tool | Description |
-|------|-------------|
-| [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge-graph MCP server for navigating the codebase |
-| [**mattpocock/skills**](https://github.com/mattpocock/skills) | Curated, reusable agent skills |
-| [**beads**](https://github.com/gastownhall/beads) | Dependency-aware `bd` issue tracker |
-| [**pi**](https://github.com/earendil-works/pi-mono) | Minimal coding agent for lightweight execution workflows |
-| [**AGENTS.md**](https://agents.md/) | Shared principles and conventions for every agent |
-| [**.git/info/exclude**](https://git-scm.com/docs/gitignore) | Local-only ignores for agent config files |
-
-## Built-in skills
-
-Bundled skills installed into the project (per-tool `.claude/skills`, `.codex/skills`, `.opencode/skills`) for every tool during project setup (`--project`). These dirs are local-only via `.git/info/exclude`.
+Written and versioned in this repo, under [`skills/`](skills/).
 
 ### /beads
 
 Workflow guide for repositories using [beads](https://github.com/gastownhall/beads) as the shared task tracker. Tells agents to use `bd` (not markdown TODOs) for ready-work discovery, atomic claiming, dependency-aware follow-ups, and durable handoff across sessions or contributors.
 
+### /design-principles
+
+Interactive writer for the design section of `AGENTS.md`. Agents pick architecture and design principles from curated catalogs so the conventions are settled before implementation starts, not argued during review.
+
 ### /coding-standards
 
 Interactive writer for `CODING_STANDARDS.md`. Helps agents select concrete style and testing rules from curated catalogs so review can enforce them without spending implementation context.
+
+## Curated skills
+
+A pinned subset of [mattpocock/skills](https://github.com/mattpocock/skills) (v1.2.3) installed alongside the bundled ones — the stable engineering and productivity skills such as `/code-review`, `/tdd`, `/diagnosing-bugs`, `/implement`, and `/handoff`. Deprecated, personal, and in-progress skills are deliberately left out. The set lives in `MATTPOCOCK_SKILLS` in [`bin/tools.mjs`](bin/tools.mjs).
+
+## Development
+
+```bash
+npm test        # node:test unit suite
+npm run check   # syntax check the installer entrypoint
+```
 
 ## [Awesome libraries](docs/awesome-libraries.md)
 
@@ -79,11 +95,10 @@ Tools being considered for future inclusion. These are not installed today.
 | Token analytics | [**tokscale**](https://github.com/junhoyeo/tokscale) | Multi-agent token and cost dashboard across Claude Code, Codex, OpenCode, Gemini, Cursor, Copilot, Amp, Zed, Goose, and more | Candidate default |
 | MCP diagnostics | [**MCP Inspector**](https://github.com/modelcontextprotocol/inspector) | Official UI/CLI debugger for MCP servers, tool schemas, resources, prompts, and config validation | Candidate default |
 | Session orchestration | [**Agent Deck**](https://github.com/asheshgoplani/agent-deck) | Tmux-based AI agent command center with worktrees, MCP/skills toggles, status detection, cost dashboard, and sandboxing | Optional |
-| Token reduction | [**RTK**](https://github.com/rtk-ai/rtk) | Command-output compaction and savings analytics for many AI coding agents; overlaps with tokf | Alternative to tokf |
+| Token reduction | [**RTK**](https://github.com/rtk-ai/rtk) | Command-output compaction and savings analytics for many AI coding agents | Optional |
 | Session history | [**Agent History**](https://github.com/kvsankar/agent-history) | Local CLI for listing and exporting Claude, Codex, and Gemini sessions across local, WSL, Windows, and SSH homes | Optional |
 | Worktree sessions | [**CCManager**](https://github.com/kbwo/ccmanager) | No-tmux TUI for managing AI coding sessions across worktrees with status detection, hooks, devcontainers, and multi-project mode | Optional |
 | Parallel workflows | [**parallel-code**](https://github.com/johannesjo/parallel-code) | Desktop GUI for dispatching Claude, Codex, Gemini, and Copilot agents in isolated git worktrees | Optional |
 | Usage reports | [**ccusage**](https://github.com/ryoppippi/ccusage) | Mature Claude Code usage analyzer with daily, monthly, session, and 5-hour billing-window reports | Optional |
 | Repo packing | [**Repomix**](https://github.com/yamadashy/repomix) | Packs local or remote repos into AI-friendly output with token counts, security checks, compression, and MCP mode | Docs only |
 | AI dev workflow | [**compound-engineering**](https://github.com/EveryInc/compound-engineering-plugin) | Plugin for Claude / Codex / OpenCode with brainstorm, plan, review, commit, PR, debug workflows; superseded here by mattpocock/skills | Replaced |
-| Token reduction | [**tokf**](https://github.com/mpecan/tokf) | Compresses noisy command output to save tokens | Removed |
