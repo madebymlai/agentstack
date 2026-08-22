@@ -60,7 +60,7 @@ export function ensureCodeDiscovery(claudeMdPath = 'CLAUDE.md') {
 }
 
 export function setupProject() {
-  ensureGitExclude(['.claude/', '.codex/', '.opencode/', '.sandcastle/', 'node_modules/', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', 'CODING_STANDARDS.md', '.mcp.json', '.beads/', '.beads-credential-key']);
+  ensureGitExclude(['.claude/', '.codex/', '.opencode/', 'node_modules/', 'CLAUDE.md', 'AGENTS.md', 'CONTEXT.md', 'CODING_STANDARDS.md', '.mcp.json', '.beads/', '.beads-credential-key']);
 
   if (!existsSync('AGENTS.md')) {
     const template = readFileSync(resolve(__dir, 'agents-template.txt'), 'utf8');

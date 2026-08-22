@@ -33,15 +33,3 @@ export function getGlobalPackageVersion(pkg) {
     return null;
   }
 }
-
-export function getNpmLatestVersion(pkg) {
-  try {
-    return execSync(`npm view ${pkg} version`, {
-      encoding: 'utf8',
-      timeout: 10000,
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
-  } catch {
-    return null;
-  }
-}

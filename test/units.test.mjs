@@ -14,8 +14,6 @@ import {
   getShellProfile,
 } from '../bin/platform.mjs';
 import { postInstallCommands, verifySha256Checksum } from '../bin/binary-install.mjs';
-import { resolveSandcastleMain, buildAfkCommand } from '../bin/afk.mjs';
-import { renderLauncher, installCliCommands } from '../bin/cli.mjs';
 import { ensureCodeDiscovery } from '../bin/project-setup.mjs';
 
 function withTempDir(fn) {
@@ -182,94 +180,6 @@ test('verifySha256Checksum: passes for a matching digest, throws otherwise', () 
     const junkSum = resolve(dir, 'junk.sha256');
     writeFileSync(junkSum, 'not-a-checksum\n');
     assert.throws(() => verifySha256Checksum(file, junkSum, 'asset.bin'), /Invalid SHA256 checksum file/);
-  });
-});
-
-// ---- afk.mjs ----
-
-test('resolveSandcastleMain: finds main.ts and returns a project-relative path', () => {
-  withTempDir((dir) => {
-    mkdirSync(resolve(dir, '.sandcastle'), { recursive: true });
-    writeFileSync(resolve(dir, '.sandcastle', 'main.ts'), '// noop');
-    assert.equal(resolveSandcastleMain(dir), join('.sandcastle', 'main.ts'));
-  });
-});
-
-test('resolveSandcastleMain: prefers main.ts over main.mts', () => {
-  withTempDir((dir) => {
-    mkdirSync(resolve(dir, '.sandcastle'), { recursive: true });
-    writeFileSync(resolve(dir, '.sandcastle', 'main.ts'), '// noop');
-    writeFileSync(resolve(dir, '.sandcastle', 'main.mts'), '// noop');
-    assert.match(resolveSandcastleMain(dir), /main\.ts$/);
-  });
-});
-
-test('resolveSandcastleMain: falls back to main.mts', () => {
-  withTempDir((dir) => {
-    mkdirSync(resolve(dir, '.sandcastle'), { recursive: true });
-    writeFileSync(resolve(dir, '.sandcastle', 'main.mts'), '// noop');
-    assert.match(resolveSandcastleMain(dir), /main\.mts$/);
-  });
-});
-
-test('resolveSandcastleMain: throws with setup guidance when .sandcastle is missing', () => {
-  withTempDir((dir) => {
-    assert.throws(() => resolveSandcastleMain(dir), /Set up sandcastle/);
-  });
-});
-
-test('buildAfkCommand: wraps npx tsx and forwards passthrough args', () => {
-  assert.deepEqual(buildAfkCommand('.sandcastle/main.ts'), {
-    command: 'npx',
-    args: ['tsx', '.sandcastle/main.ts'],
-  });
-  assert.deepEqual(buildAfkCommand('.sandcastle/main.ts', ['--foo', 'bar']), {
-    command: 'npx',
-    args: ['tsx', '.sandcastle/main.ts', '--foo', 'bar'],
-  });
-});
-
-// ---- cli.mjs ----
-
-test('renderLauncher: POSIX shim execs node, marked executable', () => {
-  const launcher = renderLauncher('afk', '/stable/afk.mjs', 'linux');
-  assert.equal(launcher.filename, 'afk');
-  assert.equal(launcher.executable, true);
-  assert.match(launcher.content, /^#!\/bin\/sh\n/);
-  assert.match(launcher.content, /exec node "\/stable\/afk\.mjs" "\$@"/);
-});
-
-test('renderLauncher: Windows shim is a .cmd forwarding %*', () => {
-  const launcher = renderLauncher('afk', 'C:\\stable\\afk.mjs', 'win32');
-  assert.equal(launcher.filename, 'afk.cmd');
-  assert.equal(launcher.executable, false);
-  assert.match(launcher.content, /node "C:\\stable\\afk\.mjs" %\*/);
-});
-
-test('installCliCommands: copies entry to dataDir and writes a launcher on PATH', () => {
-  withTempDir((root) => {
-    const sourceDir = resolve(root, 'src');
-    const dataDir = resolve(root, 'data');
-    const binDir = resolve(root, 'bin');
-    mkdirSync(sourceDir, { recursive: true });
-    writeFileSync(resolve(sourceDir, 'afk.mjs'), '// afk entry');
-
-    const origLog = console.log;
-    console.log = () => {};
-    let written;
-    try {
-      written = installCliCommands({ binDir, dataDir, sourceDir, platform: 'linux' });
-    } finally {
-      console.log = origLog;
-    }
-
-    // entry copied to the stable data dir
-    assert.equal(readFileSync(resolve(dataDir, 'afk.mjs'), 'utf8'), '// afk entry');
-
-    // launcher written to binDir and points at the stable copy
-    const launcher = resolve(binDir, 'afk');
-    assert.deepEqual(written, [launcher]);
-    assert.match(readFileSync(launcher, 'utf8'), new RegExp(`node "${resolve(dataDir, 'afk.mjs')}"`));
   });
 });
 

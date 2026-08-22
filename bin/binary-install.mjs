@@ -156,9 +156,9 @@ export function postInstallCommands(postInstall, tools) {
 }
 
 export function runPostInstall(name, server, tools = []) {
-  const pi = server.postInstall;
-  if (!pi) return;
-  const cmds = postInstallCommands(pi, tools);
+  const postInstall = server.postInstall;
+  if (!postInstall) return;
+  const cmds = postInstallCommands(postInstall, tools);
   if (!cmds?.length) return;
 
   console.log(`Configuring ${name}...`);

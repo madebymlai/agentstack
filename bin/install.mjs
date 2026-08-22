@@ -11,11 +11,8 @@ import {
   installBeads,
   installBeadsPrime,
   setupBeadsForProject,
-  installPi,
-  disablePiSkills,
 } from './tool-installers.mjs';
 import { setupProject } from './project-setup.mjs';
-import { installCliCommands } from './cli.mjs';
 import {
   TOOL_OPTIONS,
   toolsFromFlags,
@@ -79,13 +76,6 @@ async function main() {
   // beads (bd) issue tracker — binary only; project init lives behind -p
   await installBeads();
   installBeadsPrime();
-
-  // pi (pi-coding-agent) — cheap executor for agent tasks
-  installPi();
-  disablePiSkills();
-
-  // afk and friends — bare shell commands served onto PATH
-  installCliCommands();
 
   ensureBypassPermissions(tools);
 

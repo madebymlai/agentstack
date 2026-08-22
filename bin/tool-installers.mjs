@@ -1,9 +1,9 @@
 import { execSync } from 'node:child_process';
-import { copyFileSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, resolve, win32 } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { getInstalledVersion, getNpmLatestVersion } from './versions.mjs';
+import { getInstalledVersion } from './versions.mjs';
 import { getGithubLatestTag } from './net.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -64,36 +64,4 @@ export function setupBeadsForProject() {
   }
   console.log('  bd init --non-interactive --quiet --stealth');
   execSync('bd init --non-interactive --quiet --stealth', { stdio: 'inherit' });
-}
-
-export function installPi() {
-  const installed = getInstalledVersion('pi');
-  const latest = getNpmLatestVersion('@earendil-works/pi-coding-agent');
-  if (installed && (!latest || installed === latest)) {
-    console.log(`\n  pi ${installed} is up to date`);
-    return;
-  }
-  if (installed) {
-    console.log(`\npi ${installed} found; installing ${latest}...`);
-  } else {
-    console.log(`\npi not found; installing ${latest || 'latest'}...`);
-  }
-  execSync('npm install -g --loglevel=error @earendil-works/pi-coding-agent', { stdio: 'inherit' });
-}
-
-export function disablePiSkills() {
-  const piDir = resolve(homedir(), '.pi', 'agent');
-  const settingsPath = resolve(piDir, 'settings.json');
-  let settings = {};
-  if (existsSync(settingsPath)) {
-    settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
-  }
-  const current = settings.skills;
-  if (Array.isArray(current) && current.length === 1 && current[0] === '!*') {
-    return;
-  }
-  settings.skills = ['!*'];
-  mkdirSync(piDir, { recursive: true });
-  writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
-  console.log('  pi: disabled skill auto-discovery in ~/.pi/agent/settings.json');
 }
