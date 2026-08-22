@@ -273,10 +273,8 @@ export function installBundledSkills(tools) {
   }
 }
 
-export function bundledSkillsForPlatform(platform = process.platform) {
-  const skills = ['beads', 'design-principles', 'coding-standards'];
-  if (platform !== 'linux') skills.push('maintain');
-  return skills;
+export function bundledSkillsForPlatform() {
+  return ['gw::setup', 'gw::beads', 'gw::design-principles', 'gw::coding-standards'];
 }
 
 // Curated mattpocock/skills, installed by name (not by subfolder path) so the

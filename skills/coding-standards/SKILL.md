@@ -1,5 +1,5 @@
 ---
-name: coding-standards
+name: gw::coding-standards
 description: Coding standards writer — interactively select a project's style and testing standards from curated catalogs and write or update its CODING_STANDARDS.md so the code-review agent enforces them. Use when defining or revising line-level coding conventions for review, or when a repo has no coding-standards file.
 ---
 

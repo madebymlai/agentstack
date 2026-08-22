@@ -138,17 +138,12 @@ test('toolsFromFlags: returns selected tools in TOOL_OPTIONS order', () => {
   assert.deepEqual(toolsFromFlags(['--unknown']), []);
 });
 
-test('bundledSkillsForPlatform: includes coding standards from groundwork', () => {
-  assert.deepEqual(bundledSkillsForPlatform('linux'), [
-    'beads',
-    'design-principles',
-    'coding-standards',
-  ]);
-  assert.deepEqual(bundledSkillsForPlatform('darwin'), [
-    'beads',
-    'design-principles',
-    'coding-standards',
-    'maintain',
+test('bundledSkillsForPlatform: the gw:: set, same on every platform', () => {
+  assert.deepEqual(bundledSkillsForPlatform(), [
+    'gw::setup',
+    'gw::beads',
+    'gw::design-principles',
+    'gw::coding-standards',
   ]);
 });
 
