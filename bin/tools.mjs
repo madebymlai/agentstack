@@ -289,7 +289,7 @@ export const MATTPOCOCK_SKILLS = [
   'domain-modeling', 'grill-with-docs', 'implement',
   'improve-codebase-architecture', 'prototype', 'research',
   'resolving-merge-conflicts', 'tdd', 'to-spec',
-  'to-tickets', 'triage',
+  'to-tickets',
   // productivity
   'grill-me', 'grilling', 'handoff', 'to-questionnaire',
   'wait-what', 'writing-for-agents',
