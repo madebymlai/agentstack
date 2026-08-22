@@ -1,6 +1,6 @@
 <p align="center">
   <a href="docs/groundwork-flow.html">
-    <img src="docs/assets/groundwork.png?v=5" alt="groundwork: set up your coding agents with one command" width="830">
+    <img src="docs/assets/groundwork.png?v=7" alt="groundwork: set up your coding agents with one command" width="830">
   </a>
 </p>
 
@@ -10,7 +10,7 @@ See [`docs/groundwork-flow.html`](docs/groundwork-flow.html) for the full walkth
 
 ## Install
 
-Run it interactively and select Claude Code, Codex, and/or OpenCode:
+Run it interactively and select any mix of Claude Code, Codex, OpenCode, and pi:
 
 ```bash
 npx github:madebymlai/groundwork
@@ -20,16 +20,16 @@ Skip the selector with per-agent flags:
 
 ```bash
 npx github:madebymlai/groundwork --claude --codex
-npx github:madebymlai/groundwork --opencode
+npx github:madebymlai/groundwork --opencode --pi
 ```
 
 This is a machine-level run. It installs and version-checks shared binaries, then applies the settings each selected agent needs:
 
 | What | Detail |
 |------|--------|
-| [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge-graph MCP server, installed with auto-indexing enabled (`auto_index_limit 50000`) |
+| [**codebase-memory**](https://github.com/DeusData/codebase-memory-mcp) | Code knowledge-graph MCP server, installed with auto-indexing enabled (`auto_index_limit 50000`). It registers itself with each agent, including a generated pi extension |
 | [**beads**](https://github.com/gastownhall/beads) | Dependency-aware `bd` issue tracker, plus a `PRIME.md` priming guide in the beads config dir |
-| Agent permissions | Claude Code `bypassPermissions` (and empty commit/PR attribution), Codex `approval_policy = "never"` + `sandbox_mode = "danger-full-access"`, OpenCode `permission = "allow"` |
+| Agent permissions | Claude Code `bypassPermissions` (and empty commit/PR attribution), Codex `approval_policy = "never"` + `sandbox_mode = "danger-full-access"`, OpenCode `permission = "allow"`, pi `defaultProjectTrust = "always"` |
 | Claude Code context | `CLAUDE_CODE_MAX_CONTEXT_TOKENS=240000` |
 
 Re-running is safe: every step checks the installed version or existing config first and skips what is already in place.
@@ -48,7 +48,7 @@ npx github:madebymlai/groundwork --project
 | `CLAUDE.md` | A one-line `@AGENTS.md` reference, plus a `<code-discovery>` block telling agents to prefer the knowledge graph over grep |
 | `.git/info/exclude` | Local-only ignores for the agent config files above, so they never land in a commit |
 | `.beads/` | `bd init` when the binary is available |
-| Skills | Bundled and curated skills installed into `.claude/skills`, `.codex/skills`, and `.opencode/skills` |
+| Skills | Bundled and curated skills, stored once in `.agents/skills` and symlinked into `.claude/skills`. Codex, OpenCode, and pi read `.agents/skills` directly |
 
 ## Bundled skills
 

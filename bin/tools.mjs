@@ -17,6 +17,10 @@ function codexConfigDir() {
     : resolve(homedir(), '.codex');
 }
 
+function piSettingsPath() {
+  return resolve(homedir(), '.pi', 'agent', 'settings.json');
+}
+
 // --- per-tool MCP merge (exported for tests; take an explicit config path) ---
 
 export function mergeClaudeMcp(name, entry, configPath) {
@@ -90,6 +94,25 @@ export function mergeCodexMcp(name, entry, configPath) {
   mkdirSync(dirname(configPath), { recursive: true });
   writeFileSync(configPath, next);
   console.log(`  ${configPath}: ${status === 'added' ? `added "${name}"` : `updated "${name}" environment`}`);
+}
+
+// pi has no permission prompts by design. Its one trust decision is whether a
+// project's local settings, resources, and extensions load at all, and
+// non-interactive runs fall back to defaultProjectTrust. "always" is the pi
+// equivalent of the bypass posture the other adapters set.
+export function ensurePiTrust(configPath) {
+  let settings = {};
+  if (existsSync(configPath)) {
+    settings = JSON.parse(readFileSync(configPath, 'utf8'));
+  }
+  if (settings.defaultProjectTrust === 'always') {
+    console.log(`  pi: already set`);
+    return;
+  }
+  settings.defaultProjectTrust = 'always';
+  mkdirSync(dirname(configPath), { recursive: true });
+  writeFileSync(configPath, JSON.stringify(settings, null, 2) + '\n');
+  console.log(`  pi: defaultProjectTrust = "always" in ${configPath}`);
 }
 
 // --- the adapters ---
@@ -179,6 +202,24 @@ export const TOOLS = {
       mkdirSync(configDir, { recursive: true });
       writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
       console.log(`  opencode: permission = "allow" in ${configPath}`);
+    },
+  },
+
+  pi: {
+    value: 'pi',
+    label: 'pi',
+    flag: '--pi',
+    agentName: 'pi',
+    mcpConfigPath: piSettingsPath,
+    // pi ships no built-in MCP client: the core stays small and integrations
+    // arrive as extensions that register tools directly. A server that wants pi
+    // support generates its own extension under ~/.pi/agent/extensions, so
+    // there is no config for this installer to merge.
+    mergeMcp(name) {
+      console.log(`  pi: no MCP client; ${name} integrates as a pi extension`);
+    },
+    ensurePermissions() {
+      ensurePiTrust(this.mcpConfigPath());
     },
   },
 };

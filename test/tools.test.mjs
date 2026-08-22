@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, readdirSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, readdirSync, mkdirSync } from 'node:fs';
 import { resolve, win32 } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -14,6 +14,7 @@ import {
   mergeClaudeMcp,
   mergeOpencodeMcp,
   mergeCodexMcp,
+  ensurePiTrust,
   bundledSkillsForPlatform,
   MATTPOCOCK_SKILLS,
 } from '../bin/tools.mjs';
@@ -119,18 +120,20 @@ test('readMcpEnv: null when server or key absent', () => {
 
 // ---- tools.mjs: options & flags ----
 
-test('TOOL_OPTIONS: claude, codex, opencode in order with label/value/flag', () => {
+test('TOOL_OPTIONS: claude, codex, opencode, pi in order with label/value/flag', () => {
   assert.deepEqual(TOOL_OPTIONS, [
     { label: 'Claude Code', value: 'claude', flag: '--claude' },
     { label: 'Codex', value: 'codex', flag: '--codex' },
     { label: 'OpenCode', value: 'opencode', flag: '--opencode' },
+    { label: 'pi', value: 'pi', flag: '--pi' },
   ]);
 });
 
 test('toolsFromFlags: returns selected tools in TOOL_OPTIONS order', () => {
   assert.deepEqual(toolsFromFlags(['--codex', '--claude']), ['claude', 'codex']);
   assert.deepEqual(toolsFromFlags(['--opencode']), ['opencode']);
-  assert.deepEqual(toolsFromFlags(['--claude', '--codex', '--opencode']), ['claude', 'codex', 'opencode']);
+  assert.deepEqual(toolsFromFlags(['--pi', '--claude']), ['claude', 'pi']);
+  assert.deepEqual(toolsFromFlags(['--claude', '--codex', '--opencode', '--pi']), ['claude', 'codex', 'opencode', 'pi']);
   assert.deepEqual(toolsFromFlags([]), []);
   assert.deepEqual(toolsFromFlags(['--unknown']), []);
 });
@@ -242,6 +245,9 @@ test('adapter config paths and metadata', { skip: process.platform === 'win32' }
 
   assert.ok(TOOLS.opencode.mcpConfigPath().endsWith('/.config/opencode/opencode.json'));
   assert.equal(TOOLS.opencode.agentName, 'opencode');
+
+  assert.ok(TOOLS.pi.mcpConfigPath().endsWith('/.pi/agent/settings.json'));
+  assert.equal(TOOLS.pi.agentName, 'pi');
 });
 
 // ---- tools.mjs: per-tool MCP merge (JSON tools) ----
@@ -278,6 +284,31 @@ test('mergeOpencodeMcp: writes the opencode local-server shape', () => {
       environment: { KEY: 'v' },
       enabled: true,
     });
+  });
+});
+
+test('ensurePiTrust: sets defaultProjectTrust, keeps other settings, is idempotent', () => {
+  withTempDir((dir) => {
+    const configPath = resolve(dir, 'agent', 'settings.json');
+    mkdirSync(resolve(dir, 'agent'), { recursive: true });
+    writeFileSync(configPath, JSON.stringify({ defaultModel: 'gpt-5.5', theme: 'dark' }) + '\n');
+
+    quiet(() => ensurePiTrust(configPath));
+    const written = JSON.parse(readFileSync(configPath, 'utf8'));
+    assert.equal(written.defaultProjectTrust, 'always');
+    assert.equal(written.defaultModel, 'gpt-5.5', 'existing settings survive');
+    assert.equal(written.theme, 'dark');
+
+    quiet(() => ensurePiTrust(configPath));
+    assert.deepEqual(JSON.parse(readFileSync(configPath, 'utf8')), written);
+  });
+});
+
+test('ensurePiTrust: creates the settings file when pi has never run', () => {
+  withTempDir((dir) => {
+    const configPath = resolve(dir, 'agent', 'settings.json');
+    quiet(() => ensurePiTrust(configPath));
+    assert.deepEqual(JSON.parse(readFileSync(configPath, 'utf8')), { defaultProjectTrust: 'always' });
   });
 });
 
