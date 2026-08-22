@@ -58,7 +58,7 @@ function getGithubToken() {
 function httpsGetJsonOnce(url, redirects = 0) {
   if (redirects > 5) return Promise.reject(new Error(`Too many redirects fetching ${url}`));
   return new Promise((resolve, reject) => {
-    const headers = { 'User-Agent': 'agentstack-installer' };
+    const headers = { 'User-Agent': 'groundwork-installer' };
     const token = url.includes('api.github.com') ? getGithubToken() : null;
     if (token) headers['Authorization'] = `token ${token}`;
     https.get(url, { headers }, (res) => {

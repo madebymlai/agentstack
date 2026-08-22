@@ -1,26 +1,26 @@
 <p align="center">
-  <a href="docs/agent-stack-flow.html">
-    <img src="docs/assets/agent-stack.png?v=3" alt="agentstack — set up your coding agents with one command" width="830">
+  <a href="docs/groundwork-flow.html">
+    <img src="docs/assets/groundwork.png?v=5" alt="groundwork: set up your coding agents with one command" width="830">
   </a>
 </p>
 
-One command to set up a coding-agent toolchain: pick the agents you use, and agentstack installs the shared binaries, points each agent's config at them, and writes the conventions every agent reads.
+One command to set up a coding-agent toolchain: pick the agents you use, and groundwork installs the shared binaries, points each agent's config at them, and writes the conventions every agent reads.
 
-See [`docs/agent-stack-flow.html`](docs/agent-stack-flow.html) for the full walkthrough of how the pieces fit together.
+See [`docs/groundwork-flow.html`](docs/groundwork-flow.html) for the full walkthrough of how the pieces fit together.
 
 ## Install
 
-Interactive — select Claude Code, Codex, and/or OpenCode:
+Run it interactively and select Claude Code, Codex, and/or OpenCode:
 
 ```bash
-npx github:madebymlai/agentstack
+npx github:madebymlai/groundwork
 ```
 
 Skip the selector with per-agent flags:
 
 ```bash
-npx github:madebymlai/agentstack --claude --codex
-npx github:madebymlai/agentstack --opencode
+npx github:madebymlai/groundwork --claude --codex
+npx github:madebymlai/groundwork --opencode
 ```
 
 This is a machine-level run. It installs and version-checks shared binaries, then applies the settings each selected agent needs:
@@ -36,10 +36,10 @@ Re-running is safe: every step checks the installed version or existing config f
 
 ## Project setup
 
-Run inside a git repo to write the per-project conventions and skills. Agent flags are ignored here — project setup targets every agent:
+Run inside a git repo to write the per-project conventions and skills. Agent flags are ignored here, because project setup targets every agent:
 
 ```bash
-npx github:madebymlai/agentstack --project
+npx github:madebymlai/groundwork --project
 ```
 
 | What | Detail |
@@ -68,7 +68,7 @@ Interactive writer for `CODING_STANDARDS.md`. Helps agents select concrete style
 
 ## Curated skills
 
-A pinned subset of [mattpocock/skills](https://github.com/mattpocock/skills) (v1.2.3) installed alongside the bundled ones — the stable engineering and productivity skills such as `/code-review`, `/tdd`, `/diagnosing-bugs`, `/implement`, and `/handoff`. Deprecated, personal, and in-progress skills are deliberately left out. The set lives in `MATTPOCOCK_SKILLS` in [`bin/tools.mjs`](bin/tools.mjs).
+A pinned subset of [mattpocock/skills](https://github.com/mattpocock/skills) (v1.2.3) installed alongside the bundled ones: the stable engineering and productivity skills such as `/code-review`, `/tdd`, `/diagnosing-bugs`, `/implement`, and `/handoff`. Deprecated, personal, and in-progress skills are deliberately left out. The set lives in `MATTPOCOCK_SKILLS` in [`bin/tools.mjs`](bin/tools.mjs).
 
 ## Development
 
@@ -79,12 +79,12 @@ npm run check   # syntax check the installer entrypoint
 
 ## [Awesome libraries](docs/awesome-libraries.md)
 
-One opinionated pick per job — the boring choice that ships, not the trendy one.
+One opinionated pick per job: the boring choice that ships, not the trendy one.
 
-- [**Logging**](docs/awesome-libraries.md#logging) — structured, low-overhead logging that plays nice with tracing
-- [**Transcribers**](docs/awesome-libraries.md#transcribers) — hands-free agent prompting by voice
-- [**Pre-commit hooks**](docs/awesome-libraries.md#pre-commit-hooks) — fast, polyglot gates before a commit lands
-- [**Linters & formatters**](docs/awesome-libraries.md#linters--formatters) — one fast tool to catch bugs and enforce style
+- [**Logging**](docs/awesome-libraries.md#logging): structured, low-overhead logging that plays nice with tracing
+- [**Transcribers**](docs/awesome-libraries.md#transcribers): hands-free agent prompting by voice
+- [**Pre-commit hooks**](docs/awesome-libraries.md#pre-commit-hooks): fast, polyglot gates before a commit lands
+- [**Linters & formatters**](docs/awesome-libraries.md#linters--formatters): one fast tool to catch bugs and enforce style
 
 ## Candidates
 

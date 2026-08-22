@@ -28,7 +28,7 @@ async function main() {
   const selectedByFlags = toolsFromFlags(args);
 
   if (projectOnly) {
-    console.log('agentstack project setup\n');
+    console.log('groundwork project setup\n');
     if (!existsSync('.git')) {
       console.log('Not a git repository. Run from a git repo root.');
       process.exit(1);
@@ -46,7 +46,7 @@ async function main() {
     return;
   }
 
-  console.log('agentstack\n');
+  console.log('groundwork\n');
 
   const tools = selectedByFlags.length
     ? selectedByFlags

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>agentstack — set up your coding agents with one command</title>
+<title>groundwork: set up your coding agents with one command</title>
 <style>
   :root{
     --bg:#0b0d10; --panel:#13161b; --panel2:#181c22; --border:#262b33;
@@ -30,7 +30,7 @@
        display:flex; align-items:center; gap:10px; cursor:pointer}
   .cmd::before{content:"$"; color:var(--accent2); font-weight:700}
   .cmd-txt{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  /* copy button — GitHub-style */
+  /* copy button, GitHub-style */
   .copy-btn{margin-left:auto; flex:0 0 auto; display:inline-flex; align-items:center;
             justify-content:center; width:30px; height:30px; color:var(--muted);
             border:1px solid var(--border); background:transparent}
@@ -65,7 +65,7 @@
   footer{margin-top:80px; padding-top:22px; border-top:1px solid var(--border);
           color:#5f6b78; font-size:13px}
 
-  /* =================== SQUARE HERO — 830×830, flat, sharp =================== */
+  /* =================== SQUARE HERO, 830×830, flat, sharp =================== */
   #hero-square{
     width:830px; height:830px; max-width:100%;
     margin:64px auto 0; background:var(--panel); border:1px solid var(--border);
@@ -83,7 +83,7 @@
   .hs-head p b{color:var(--text); font-weight:600}
   .hs-prose{color:#c2ccd6; font-size:17px; line-height:1.75; margin:36px 0 0; max-width:690px}
   .hs-prose strong{color:var(--accent2); font-weight:600}
-  /* hero workflow graph — flat, square */
+  /* hero workflow graph, flat and square */
   .wf{margin-top:auto; padding-top:8px}
   .wf-rail{display:flex; align-items:stretch}
   .wf-node{flex:1; border:1px solid var(--border); background:#0f1318; padding:16px 12px; text-align:center}
@@ -100,16 +100,16 @@
 <div class="wrap">
 
   <!-- =================== SQUARE HERO (830×830, README width) =================== -->
-  <section id="hero-square" aria-label="agentstack — set up your coding agents with one command">
+  <section id="hero-square" aria-label="groundwork: set up your coding agents with one command">
     <div class="hs-brand">
-      <span class="name">agentstack</span>
+      <span class="name">groundwork</span>
       <span class="kicker">AI coding agent setup</span>
     </div>
 
     <div class="hs-head">
       <h1>Set up your coding agents with <span class="ac">one command.</span></h1>
       <p>The same tools and workflow across <b>Claude Code</b>, <b>Codex</b>, and
-         <b>OpenCode</b> — no per-agent setup.</p>
+         <b>OpenCode</b>, with no per-agent setup.</p>
     </div>
 
     <p class="hs-prose">The tools feed each other. <strong>beads</strong> tracks the work and its
@@ -137,13 +137,13 @@
       <div class="num">1</div>
       <div>
         <h3>Run one command</h3>
-        <p>Run <code>npx github:madebymlai/agentstack</code> and pick the agents you use.</p>
+        <p>Run <code>npx github:madebymlai/groundwork</code> and pick the agents you use.</p>
       </div>
     </div>
     <div class="step">
       <div class="num">2</div>
       <div>
-        <h3>agentstack sets everything up</h3>
+        <h3>groundwork sets everything up</h3>
         <p>It installs the tools and registers the code-graph MCP server for each agent.</p>
       </div>
     </div>
@@ -162,15 +162,15 @@
     <div class="file"><span class="k">AGENTS.md</span><span class="v">Principles and conventions, shared by every agent.</span></div>
     <div class="file"><span class="k">CLAUDE.md</span><span class="v">Agent instructions plus issue-tracker rules.</span></div>
     <div class="file"><span class="k">.beads/</span><span class="v">Your issue database, synced over git.</span></div>
-    <div class="file"><span class="k">.git/info/exclude</span><span class="v">Local-only ignores — never committed.</span></div>
+    <div class="file"><span class="k">.git/info/exclude</span><span class="v">Local-only ignores, never committed.</span></div>
   </div>
 
   <!-- =================== CTA =================== -->
   <h2>Get started</h2>
-  <div class="cmd" data-cmd="npx github:madebymlai/agentstack" role="button" tabindex="0"
+  <div class="cmd" data-cmd="npx github:madebymlai/groundwork" role="button" tabindex="0"
        aria-label="Copy install command" onclick="copyCmd(this)"
        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();copyCmd(this)}">
-    <span class="cmd-txt">npx github:madebymlai/agentstack</span>
+    <span class="cmd-txt">npx github:madebymlai/groundwork</span>
     <span class="copy-btn">
       <svg class="ico-copy" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>
       <svg class="ico-check" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"></path></svg>
@@ -179,7 +179,7 @@
   <p class="works">Works with <b>Claude Code</b>, <b>Codex</b>, and <b>OpenCode</b>.</p>
 
   <footer>
-    Open this file in any browser — it is self-contained. Generated from the agentstack configuration.
+    Open this file in any browser. It is self-contained. Generated from the groundwork configuration.
   </footer>
 
 </div>

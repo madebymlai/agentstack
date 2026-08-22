@@ -217,12 +217,12 @@ export function installBundledSkills(tools) {
 
   const skills = bundledSkillsForPlatform();
 
-  console.log('\nInstalling agentstack skills...');
+  console.log('\nInstalling groundwork skills...');
   const agentArgs = agents.flatMap(a => ['-a', a]);
   const skillArgs = skills.flatMap(s => ['--skill', s]);
   // No -g: the skills CLI auto-detects project scope and installs into the
   // project's per-agent skill dirs (.claude/skills, .codex/skills, ...).
-  const args = ['skills@latest', 'add', 'madebymlai/agentstack', ...skillArgs, '-y', ...agentArgs];
+  const args = ['skills@latest', 'add', 'madebymlai/groundwork', ...skillArgs, '-y', ...agentArgs];
   try {
     execSync(`npx ${args.map(a => JSON.stringify(a)).join(' ')}`, { stdio: 'pipe' });
   } catch (err) {

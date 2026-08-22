@@ -20,7 +20,7 @@ import {
 import { getBeadsConfigDir, installBeadsPrime } from '../bin/tool-installers.mjs';
 
 function withTempDir(fn) {
-  const dir = mkdtempSync(resolve(tmpdir(), 'agentstack-tools-test-'));
+  const dir = mkdtempSync(resolve(tmpdir(), 'groundwork-tools-test-'));
   try {
     return fn(dir);
   } finally {
@@ -59,11 +59,11 @@ test('concreteEnvEntries: drops placeholders and empties', () => {
 });
 
 test('resolveEnvPlaceholders: overrides first, then process.env, leaving the rest', () => {
-  const prev = process.env.AGENTSTACK_TEST_VAR;
+  const prev = process.env.GROUNDWORK_TEST_VAR;
   try {
-    process.env.AGENTSTACK_TEST_VAR = 'from-env';
+    process.env.GROUNDWORK_TEST_VAR = 'from-env';
     const out = resolveEnvPlaceholders(
-      { FROM_OVERRIDE: '${FOO}', FROM_ENV: '${AGENTSTACK_TEST_VAR}', LITERAL: 'plain', MISSING: '${NOPE_NOT_SET}' },
+      { FROM_OVERRIDE: '${FOO}', FROM_ENV: '${GROUNDWORK_TEST_VAR}', LITERAL: 'plain', MISSING: '${NOPE_NOT_SET}' },
       { FOO: 'from-override' },
     );
     assert.equal(out.FROM_OVERRIDE, 'from-override');
@@ -71,8 +71,8 @@ test('resolveEnvPlaceholders: overrides first, then process.env, leaving the res
     assert.equal(out.LITERAL, 'plain');
     assert.equal(out.MISSING, '${NOPE_NOT_SET}'); // unresolved placeholder left as-is
   } finally {
-    if (prev === undefined) delete process.env.AGENTSTACK_TEST_VAR;
-    else process.env.AGENTSTACK_TEST_VAR = prev;
+    if (prev === undefined) delete process.env.GROUNDWORK_TEST_VAR;
+    else process.env.GROUNDWORK_TEST_VAR = prev;
   }
 });
 
@@ -135,7 +135,7 @@ test('toolsFromFlags: returns selected tools in TOOL_OPTIONS order', () => {
   assert.deepEqual(toolsFromFlags(['--unknown']), []);
 });
 
-test('bundledSkillsForPlatform: includes coding standards from agentstack', () => {
+test('bundledSkillsForPlatform: includes coding standards from groundwork', () => {
   assert.deepEqual(bundledSkillsForPlatform('linux'), [
     'beads',
     'design-principles',

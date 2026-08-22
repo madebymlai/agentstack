@@ -37,7 +37,7 @@ const CODE_DISCOVERY_END = '</code-discovery>';
 
 // Append (or refresh) the codebase-memory code-discovery guidance as a
 // <code-discovery> ... </code-discovery> block in the project's CLAUDE.md. The
-// tags bound an agentstack-managed region, so re-running setup replaces the
+// tags bound a groundwork-managed region, so re-running setup replaces the
 // block in place instead of duplicating it.
 export function ensureCodeDiscovery(claudeMdPath = 'CLAUDE.md') {
   const text = readFileSync(resolve(__dir, 'code-discovery.txt'), 'utf8').trim();

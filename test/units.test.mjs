@@ -17,7 +17,7 @@ import { postInstallCommands, verifySha256Checksum } from '../bin/binary-install
 import { ensureCodeDiscovery } from '../bin/project-setup.mjs';
 
 function withTempDir(fn) {
-  const dir = mkdtempSync(resolve(tmpdir(), 'agentstack-test-'));
+  const dir = mkdtempSync(resolve(tmpdir(), 'groundwork-test-'));
   try {
     return fn(dir);
   } finally {
