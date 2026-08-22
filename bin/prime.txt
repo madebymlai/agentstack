@@ -26,8 +26,7 @@ Lifecycle:
 - `bd supersede <id> --with=<new-id>` marks an issue as replaced by newer work.
 
 Specs and planning:
-- Use `/grilling` or `/wayfinder` to clarify direction, then `/to-spec` -> `/to-tickets` -> `/implement` -> `/code-review`.
-- `/wayfinder` maps are Beads epics: create the map with `--type=epic --labels wayfinder:map`; create tickets as children with `--labels wayfinder:<type>`.
+- Use `/grilling` to clarify direction, then `/to-spec` -> `/to-tickets` -> `/implement` -> `/code-review`.
 - `/to-spec` must create the spec issue with `--type=epic`.
 - Epics are containers; implement their child tickets from `/to-tickets`, not the epic itself.
 

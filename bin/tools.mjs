@@ -244,11 +244,11 @@ export function bundledSkillsForPlatform(platform = process.platform) {
 // and in-progress skills stay out of the default install.
 export const MATTPOCOCK_SKILLS = [
   // engineering
-  'ask-matt', 'code-review', 'codebase-design', 'diagnosing-bugs',
+  'code-review', 'codebase-design', 'diagnosing-bugs',
   'domain-modeling', 'grill-with-docs', 'implement',
   'improve-codebase-architecture', 'prototype', 'research',
   'resolving-merge-conflicts', 'tdd', 'to-spec',
-  'to-tickets', 'triage', 'wayfinder',
+  'to-tickets', 'triage',
   // productivity
   'grill-me', 'grilling', 'handoff', 'to-questionnaire',
   'wait-what', 'writing-for-agents',
